@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outlet — Architecture Diagrams</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.1/mermaid.min.js"></script>
+<style>
+  :root{--ink:#12161f;--panel:#1f2734;--amber:#f5a800;--light:#d7dce5;--muted:#8a93a3}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--ink);color:var(--light);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{padding:14px 20px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--panel);flex-wrap:wrap}
+  header h1{font-size:16px;color:#fff}
+  header h1 span{color:var(--amber)}
+  nav{display:flex;gap:6px;flex-wrap:wrap}
+  nav button{padding:7px 14px;border-radius:6px;border:1px solid var(--panel);background:transparent;color:var(--muted);cursor:pointer;font-size:13px}
+  nav button.active{background:var(--amber);color:var(--ink);font-weight:700;border-color:var(--amber)}
+  .hint{margin-left:auto;font-size:12px;color:var(--muted)}
+  .stage{flex:1;position:relative;overflow:hidden}
+  .panel{position:absolute;inset:0;display:none;cursor:grab}
+  .panel.active{display:block}
+  .panel.grabbing{cursor:grabbing}
+  .canvas{position:absolute;transform-origin:0 0;background:#fff;border-radius:10px;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+  .zoombar{position:absolute;bottom:16px;right:16px;display:flex;gap:6px;z-index:5}
+  .zoombar button{width:38px;height:38px;border-radius:8px;border:0;background:var(--amber);color:var(--ink);font-size:18px;font-weight:800;cursor:pointer}
+  .zoombar button.reset{width:auto;padding:0 12px;font-size:12px}
+  .mermaid{font-size:15px}
+</style>
+</head>
+<body>
+<header>
+  <h1>OUTLET <span>·</span> architecture</h1>
+  <nav id="tabs">
+    <button data-p="auth" class="active">Auth model</button>
+    <button data-p="flow">Grant flow</button>
+    <button data-p="sys">System overview</button>
+    <button data-p="data">Data model</button>
+  </nav>
+  <div class="hint">drag to pan · scroll/buttons to zoom</div>
+</header>
+
+<div class="stage" id="stage">
+
+  <div class="panel active" data-p="auth"><div class="canvas"><pre class="mermaid">
+flowchart TB
+    Q{{"How does Outlet get authority<br/>over a user's AI account?"}}
+
+    subgraph NO["❌ NEVER — not offered / not allowed"]
+        N1["'Log in with Anthropic/OpenAI'<br/>for API orgs — DOES NOT EXIST.<br/>No provider offers org-level OAuth."]
+        N2["Provider passwords or<br/>console logins — never touched"]
+        N3["Subscription OAuth piggybacking<br/>(the OpenClaw ban) — walled off,<br/>SPEC §2.1"]
+    end
+
+    subgraph YES["✅ v0 — credential handoff, user-initiated"]
+        Y1["1 · User opens THEIR console<br/>(Outlet deep-links the exact admin-keys page)"]
+        Y2["2 · User mints an org ADMIN key themselves<br/>sk-admin-… / sk-ant-admin-…"]
+        Y3["3 · Pastes it into Outlet ONCE<br/>= the consent moment (like OAuth approval)"]
+        Y4["4 · Vault encrypts it (AES-256-GCM)<br/>and uses official Admin APIs only"]
+        Y5["5 · Per-app scoped keys provisioned<br/>inside the USER'S own org —<br/>visible + revocable in their console too"]
+        Y1 --> Y2 --> Y3 --> Y4 --> Y5
+    end
+
+    subgraph FUT["🔮 LATER — provider-native ports"]
+        F1["Subscriptions: Agent SDK credit (Anthropic),<br/>Sign in with ChatGPT (OpenAI)<br/>— sanctioned login-style flows"]
+        F2["If providers ever ship delegated OAuth<br/>for org management → adapters migrate<br/>(SPEC §5 commitment). The Plaid arc."]
+    end
+
+    Q --> NO
+    Q ==> YES
+    Q --> FUT
+
+    style YES fill:#f3fbf4,stroke:#2c7a39
+    style NO fill:#fdf3f3,stroke:#b3433b
+    style FUT fill:#f4f6fd,stroke:#4a5fb5
+  </pre></div></div>
+
+  <div class="panel" data-p="flow"><div class="canvas"><pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor U as User (account owner)
+    participant APP as App (@useoutlet/sdk)
+    participant V as Outlet vault
+    participant P as Provider admin API (OpenAI)
+    participant I as Provider inference API
+
+    Note over U,V: CONNECT — once per provider. No provider login exists;<br/>the user self-mints an admin key and hands it over deliberately.
+    U->>U: open own console via Outlet deep-link, create sk-admin-… key
+    U->>V: POST /v0/users … /credentials (paste admin key)
+    V->>V: validate sk-admin- prefix · AES-GCM encrypt · store in D1
+
+    Note over APP,V: GRANT — once per app
+    APP->>V: POST /v0/grants {app_id, providers, requested_cap_usd}
+    V-->>APP: {grantRequestId, grantUrl}
+    APP->>U: redirect to grantUrl (grant screen)
+    U->>V: approve cap — /approve, user JWT + human check
+    V->>P: create project "outlet · app" (with user's admin key)
+    V->>P: set budget_limit_usd (belt)
+    V->>P: create service account
+    P-->>V: raw scoped key sk-svcacct-…
+    V->>V: encrypt key · grant → active
+    APP->>V: GET /v0/grants/:id (poll)
+    V-->>APP: session {keys, capUsd, expiresAt}
+
+    Note over APP,I: USE — every request. Outlet absent from data path.
+    APP->>I: inference with scoped key → user's billing
+
+    Note over V,P: METER — cron every 5 min (suspenders)
+    V->>P: costs grouped by project
+    alt spend ≥ cap
+        V->>P: delete service account (instant kill)
+        V->>V: grant → capped
+    end
+
+    Note over U,P: REVOKE — user, app, or meter. Also possible<br/>directly in the provider console (it's the user's org).
+    U->>V: DELETE /v0/grants/:id
+    V->>P: delete service account + archive project
+    V-->>APP: next refresh() → grant_revoked
+  </pre></div></div>
+
+  <div class="panel" data-p="sys"><div class="canvas"><pre class="mermaid">
+flowchart LR
+    subgraph UserSide["User"]
+        U["End user<br/>(owns provider account)"]
+    end
+    subgraph AppSide["Third-party app"]
+        APP["App backend / frontend"]
+        SDK["@useoutlet/sdk"]
+        APP --- SDK
+    end
+    subgraph Outlet["Outlet (Cloudflare)"]
+        GS["Grant screen<br/><i>useoutlet.dev/grant</i>"]
+        subgraph Vault["vault (Worker)"]
+            R["routes/"]
+            A["adapters/<br/>openai ✅ · anthropic next"]
+            L["lib/ crypto · db · meter"]
+            R --> A
+            R --> L
+            A --> L
+        end
+        D1[("D1")]
+        SEC["secrets: MASTER_KEY"]
+        CRON["cron */5min"]
+        L --> D1
+        L -.-> SEC
+        CRON --> Vault
+    end
+    subgraph Providers["AI providers"]
+        OAI["OpenAI admin API"]
+        ANT["Anthropic admin API"]
+        INF["Inference APIs"]
+    end
+    U -->|connect once| Vault
+    U -->|approve| GS
+    SDK -->|grant lifecycle| R
+    A --> OAI
+    A --> ANT
+    APP ==>|"inference — DIRECT,<br/>never via Outlet"| INF
+    style APP fill:#1f2734,color:#fff
+    style INF fill:#1f2734,color:#fff
+  </pre></div></div>
+
+  <div class="panel" data-p="data"><div class="canvas"><pre class="mermaid">
+erDiagram
+    USERS ||--o{ CREDENTIALS : "one per provider"
+    USERS ||--o{ GRANTS : "approves"
+    USERS {
+        text id PK "usr_…"
+        text email UK
+        text created_at
+    }
+    CREDENTIALS {
+        text user_id PK,FK
+        text provider PK "openai | anthropic | google"
+        text encrypted_admin_key "AES-256-GCM at rest"
+        text created_at
+    }
+    GRANTS {
+        text id PK "grant_…"
+        text user_id FK
+        text app_id "APPS table planned"
+        text provider
+        real cap_usd "monthly cap"
+        text status "pending | active | capped | revoked"
+        text provider_refs "JSON: projectId, serviceAccountId"
+        text encrypted_app_key "scoped key, encrypted"
+        text created_at
+        text updated_at
+    }
+  </pre></div></div>
+
+  <div class="zoombar">
+    <button id="zin">+</button>
+    <button id="zout">−</button>
+    <button id="zreset" class="reset">reset</button>
+  </div>
+</div>
+
+<script>
+mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+
+// Per-panel pan/zoom state
+const state = {};
+document.querySelectorAll(".panel").forEach(p => {
+  state[p.dataset.p] = { x: 40, y: 24, s: 1 };
+});
+
+function apply(panel) {
+  const st = state[panel.dataset.p];
+  panel.querySelector(".canvas").style.transform =
+    `translate(${st.x}px, ${st.y}px) scale(${st.s})`;
+}
+function activePanel() { return document.querySelector(".panel.active"); }
+
+document.querySelectorAll(".panel").forEach(apply);
+
+// Tabs
+document.getElementById("tabs").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b === btn));
+  document.querySelectorAll(".panel").forEach(p =>
+    p.classList.toggle("active", p.dataset.p === btn.dataset.p));
+});
+
+// Drag to pan
+let drag = null;
+const stage = document.getElementById("stage");
+stage.addEventListener("mousedown", e => {
+  if (e.target.closest(".zoombar")) return;
+  const p = activePanel(); p.classList.add("grabbing");
+  drag = { px: e.clientX, py: e.clientY, st: state[p.dataset.p] };
+});
+window.addEventListener("mousemove", e => {
+  if (!drag) return;
+  drag.st.x += e.clientX - drag.px; drag.st.y += e.clientY - drag.py;
+  drag.px = e.clientX; drag.py = e.clientY;
+  apply(activePanel());
+});
+window.addEventListener("mouseup", () => {
+  drag = null; activePanel()?.classList.remove("grabbing");
+});
+
+// Wheel zoom (around cursor)
+stage.addEventListener("wheel", e => {
+  e.preventDefault();
+  const p = activePanel(); const st = state[p.dataset.p];
+  const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  const ns = Math.min(4, Math.max(0.2, st.s * factor));
+  const rect = stage.getBoundingClientRect();
+  const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+  st.x = cx - (cx - st.x) * (ns / st.s);
+  st.y = cy - (cy - st.y) * (ns / st.s);
+  st.s = ns;
+  apply(p);
+}, { passive: false });
+
+// Buttons
+function zoom(factor) {
+  const p = activePanel(); const st = state[p.dataset.p];
+  const rect = stage.getBoundingClientRect();
+  const cx = rect.width / 2, cy = rect.height / 2;
+  const ns = Math.min(4, Math.max(0.2, st.s * factor));
+  st.x = cx - (cx - st.x) * (ns / st.s);
+  st.y = cy - (cy - st.y) * (ns / st.s);
+  st.s = ns; apply(p);
+}
+document.getElementById("zin").onclick = () => zoom(1.25);
+document.getElementById("zout").onclick = () => zoom(1 / 1.25);
+document.getElementById("zreset").onclick = () => {
+  const p = activePanel(); state[p.dataset.p] = { x: 40, y: 24, s: 1 }; apply(p);
+};
+</script>
+</body>
+</html>

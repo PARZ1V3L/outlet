@@ -1,0 +1,17 @@
+Creative Commons Attribution 4.0 International (CC-BY-4.0)
+
+Copyright (c) 2026 Outlet
+
+The Outlet Protocol Specification (all content in this `spec/` directory) is
+licensed under the Creative Commons Attribution 4.0 International License.
+
+You are free to share and adapt this specification, including for commercial
+purposes, as long as you give appropriate credit. This lets others implement
+the protocol while keeping attribution to Outlet.
+
+Full legal text: https://creativecommons.org/licenses/by/4.0/legalcode
+Human-readable summary: https://creativecommons.org/licenses/by/4.0/
+
+Note: this license covers the specification text only. The "Outlet" name and
+logo are trademarks and are not granted by this license, and the private vault
+implementation is not licensed for reuse.
