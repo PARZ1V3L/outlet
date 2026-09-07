@@ -1,0 +1,56 @@
+name: Release
+
+# Publishes @useoutlet/sdk to npm from a v* tag with OIDC trusted publishing.
+# No npm token anywhere: the registry trusts this workflow file in this repo.
+# Provenance is generated automatically under trusted publishing; the flag
+# below keeps the intent explicit. prepublishOnly runs typecheck, tests, build.
+# The npm-side trusted publisher for this file allows direct npm publish
+# (npm's default for new connections is staged publishing only).
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish @useoutlet/sdk
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+
+      - name: Tag must match sdk/package.json
+        run: |
+          want="v$(node -p "require('./sdk/package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$want" ]; then
+            echo "tag $GITHUB_REF_NAME does not match sdk/package.json ($want)"
+            exit 1
+          fi
+
+      - name: npm must support trusted publishing (11.5.1 or later)
+        run: |
+          have="$(npm --version)"
+          echo "npm $have"
+          if [ "$(printf '%s\n%s\n' 11.5.1 "$have" | sort -V | head -n 1)" != "11.5.1" ]; then
+            echo "npm $have is below 11.5.1"
+            exit 1
+          fi
+
+      # Install scripts of dependencies never see the OIDC credential.
+      - run: npm ci --ignore-scripts
+        working-directory: sdk
+
+      - run: npm publish --provenance --access public
+        working-directory: sdk
