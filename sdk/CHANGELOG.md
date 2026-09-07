@@ -1,6 +1,13 @@
-# Changelog — @useoutlet/sdk
+# Changelog (@useoutlet/sdk)
 
-## 0.4.0 — 2026-09-04
+## 0.4.1 (2026-09-07)
+
+- README wording pass.
+- The npm page links the source: github.com/PARZ1V3L/outlet.
+- Published from GitHub Actions with provenance.
+- Dev dependency: vitest 3.x.
+
+## 0.4.0 (2026-09-04)
 
 - **PKCE on phones.** `createGrant()` / `pkceChallenge()` accept an
   optional `crypto: { getRandomValues, sha256 }` for runtimes without
@@ -8,19 +15,19 @@
   Node need nothing. Neither available → `OutletError` code `no_crypto`.
 - **`vault_requires_billing` speaks to the developer.** When the vault's
   billing gate refuses a new connection (402, SPEC §6.2), the `OutletError`
-  message now carries the checkout hint — "Add a payment method to enable
-  vault mode for this app. Existing connections keep working." — instead of
+  message now carries the checkout hint ("Add a payment method to enable
+  vault mode for this app. Existing connections keep working.") instead of
   the generic status line. Code and status are unchanged. Users never see
   this: the gate only ever answers the app's own `connect()` call.
 
-## 0.3.0 — 2026-08-22
+## 0.3.0 (2026-08-22)
 
 One release carries both 2026 feature lines: the OpenAI-compatible-provider
 work first shipped in the public repo (2026-06-15) and the public-client
 PKCE era. npm has never served a 0.3.0.
 
 - **Public-client PKCE grant flow** (SPEC §7.1, ADR 0005): apps with no
-  backend — SPA, mobile, CLI — connect without an `app_secret`. New surface:
+  backend (SPA, mobile, CLI) connect without an `app_secret`. New surface:
   `connectRedirect()` / `handleRedirect()` for browsers, `createGrant()` /
   `exchangeCode()` / `pkceChallenge()` for clients that manage the redirect
   themselves. Sessions carry a grant-scoped `refreshToken` that authorizes
@@ -28,7 +35,7 @@ PKCE era. npm has never served a 0.3.0.
 - **Fix: `refresh()` surfaces the rotated refresh token.** Public-client
   refresh tokens rotate on every use (OAuth 2.1 §6.1); the SDK previously
   dropped the new token, stranding public clients after their first refresh.
-  `refresh()` now returns `refreshToken` when the vault rotates — persist it
+  `refresh()` now returns `refreshToken` when the vault rotates. Persist it
   before the next call.
 - **`status()` reads the pure `/status` endpoint.** Polling status no longer
   re-delivers key material; `status()` now returns `GrantInfo` including
@@ -45,10 +52,10 @@ PKCE era. npm has never served a 0.3.0.
   / `revoke` throw a clear `OutletError` with code `vault_unavailable` and a
   human door (email hello@useoutlet.dev), instead of a raw network error.
 - Docs: `capUsd` is `Infinity` in direct mode and does not survive
-  `JSON.stringify` (becomes `null`) — noted on the type. README now says
+  `JSON.stringify` (becomes `null`), noted on the type. README now says
   "App key" for the provisioned key, matching the product glossary.
 
-## 0.2.1 — 2026-06-12
+## 0.2.1 (2026-06-12)
 
 - First public release: direct (paste) mode with local validation, vault-mode
   `connect()` / `refresh()` / `revoke()` / `status()` against the draft wire

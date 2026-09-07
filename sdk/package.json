@@ -1,6 +1,6 @@
 {
   "name": "@useoutlet/sdk",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Connect your users' AI accounts to your app. Capped, revocable App keys, never raw credentials. Outlet is never in the data path.",
   "license": "MIT",
   "author": "Parz <hello@useoutlet.dev>",
@@ -26,7 +26,8 @@
   },
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc",
@@ -51,7 +52,7 @@
   ],
   "devDependencies": {
     "typescript": "^5.5.0",
-    "vitest": "^2.0.0"
+    "vitest": "^3.2.7"
   },
   "engines": {
     "node": ">=18"
