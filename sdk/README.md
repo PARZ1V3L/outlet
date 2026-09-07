@@ -20,9 +20,26 @@ directly with the official SDK. Outlet is **never in the data path**.
 
 > Status: **direct mode works today** (validated bring-your-own-key, no
 > server). Vault mode (capped, revocable App keys) is in early access.
-> Email hello@useoutlet.dev to register your app. Same session shape,
+> Registration is by invite. Get one at useoutlet.dev. Same session shape,
 > one-line upgrade. Protocol docs at [useoutlet.dev](https://useoutlet.dev).
 > Feedback welcome.
+
+## Building with an AI? Paste this.
+
+Your AI sets Outlet up for you. Your invite brings the app id.
+
+```text
+Add Outlet to this app so users can connect their own AI account.
+Read https://useoutlet.dev/llms-full.txt first.
+Install: npm install @useoutlet/sdk
+App id: <from your invite>
+Return address: <the https or private-scheme return address>
+Local testing: http://localhost/outlet/return, any port
+Flow: public client. Outlet.connectRedirect on the button, Outlet.handleRedirect on the return page. No app secret in the app.
+Providers: openai, anthropic
+Button: "Connect your AI", where a user would add an AI today.
+After connect: call the provider with its official SDK using session.keys.<provider>.
+```
 
 ## Why
 
@@ -76,7 +93,7 @@ the pasted key becomes an App key: provisioned inside the user's own account
 for your app alone, capped, and revocable.
 
 ```ts
-// NOTE: vault mode is in early access. Email hello@useoutlet.dev to register your app and get an app_id.
+// NOTE: vault mode is by invite during early access. Your invite brings your app_id: useoutlet.dev
 //
 // 1. user clicks [ Connect your AI ], which opens the Outlet grant screen
 const session = await Outlet.connect({

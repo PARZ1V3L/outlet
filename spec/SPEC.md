@@ -299,9 +299,10 @@ The vault serves **registered apps only**.
     A registered `redirect_uri` is `https` on any host, `http` on the
     loopback (`localhost` or `127.0.0.1`, for development), or a private-use
     reverse-DNS scheme (RFC 8252 §7.1) such as `com.example.app:/outlet`.
-    It is matched exactly as written (the scheme is not case-normalized),
-    carries no fragment, and is at most 512 characters, the scheme itself at
-    most 64 (vault 6780b84).
+    A loopback address (http://localhost, http://127.0.0.1) matches on any
+    port. Every other address matches exactly as written (the scheme is not
+    case-normalized). A registered address carries no fragment and is at
+    most 512 characters, the scheme itself at most 64 (vault 6780b84).
 
   An app may register both. Requests are rejected with `app_unregistered` for
   an unknown `app_id` or a bad secret, and with `redirect_not_registered` for
@@ -458,8 +459,10 @@ keep using the secret unchanged. See ADR 0005.
    in place of the secret. `refresh` **rotates** the token (OAuth 2.1 §6.1):
    the response carries a new `refresh_token` and the presented one is voided.
 
-The `redirect_uri` MUST exactly match one registered for the `app_id` (§6.1);
-this exact-match allowlist is the public-client registry gate.
+The `redirect_uri` MUST match one registered for the `app_id` (§6.1). A
+loopback address (http://localhost, http://127.0.0.1) matches on any port.
+Every other address matches exactly as written. This allowlist is the
+public-client registry gate.
 
 Native apps (iOS, Android) open `grant_url` in the system authentication
 sheet (`ASWebAuthenticationSession`, Chrome's Auth Tab), never in an embedded

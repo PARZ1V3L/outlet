@@ -12,6 +12,7 @@ is never in the data path.
 - **Protocol:** [spec/SPEC.md](spec/SPEC.md). CC-BY-4.0.
 - **Phone apps:** [examples/phones/](examples/phones/). iPhone, Android, React Native.
 - **Docs:** [useoutlet.dev/docs](https://useoutlet.dev/docs/)
+- **Invites:** registration is by invite during early access. [useoutlet.dev](https://useoutlet.dev)
 - **Security:** [SECURITY.md](SECURITY.md). security@useoutlet.dev
 
 The hosted vault at api.useoutlet.dev is private code, by design
