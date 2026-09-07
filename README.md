@@ -1,5 +1,7 @@
 # Outlet
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/PARZ1V3L/outlet/badge)](https://scorecard.dev/viewer/?uri=github.com/PARZ1V3L/outlet)
+
 **Use the AI power you already pay for.**
 
 Your users already pay for AI. Outlet plugs that account into your app
