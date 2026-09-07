@@ -26,7 +26,7 @@ directly with the official SDK. Outlet is **never in the data path**.
 
 ## Building with an AI? Paste this.
 
-Your AI sets Outlet up for you. Your invite brings the app id.
+Your AI adds the Connect your AI button for you. Your invite brings the app id.
 
 ```text
 Add Outlet to this app so users can connect their own AI account.
