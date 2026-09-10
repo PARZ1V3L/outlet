@@ -20,8 +20,8 @@ directly with the official SDK. Outlet is **never in the data path**.
 
 > Status: **direct mode works today** (validated bring-your-own-key, no
 > server). Vault mode (capped, revocable App keys) is in early access.
-> Registration is by invite. Get one at useoutlet.dev. Same session shape,
-> one-line upgrade. Protocol docs at [useoutlet.dev](https://useoutlet.dev).
+> Registration is by invite. Get one at useoutlet.dev.
+> The same session in both modes. Protocol docs at [useoutlet.dev](https://useoutlet.dev).
 > Feedback welcome.
 
 ## Building with an AI? Paste this.
@@ -36,7 +36,7 @@ App id: <from your invite>
 Return address: <the https or private-scheme return address>
 Local testing: http://localhost/outlet/return, any port
 Flow: public client. Outlet.connectRedirect on the button, Outlet.handleRedirect on the return page. No app secret in the app.
-Providers: openai, anthropic
+Provider: choose openai or anthropic. Send exactly one provider per connection request.
 Button: "Connect your AI", where a user would add an AI today.
 After connect: call the provider with its official SDK using session.keys.<provider>.
 ```
@@ -86,7 +86,7 @@ OpenAI, Anthropic, and Google get strict key-format checks (mix-ups caught,
 admin keys refused); other providers are accepted with the same admin-key
 safety check, since their key formats vary.
 
-## Vault mode (one-line upgrade, in early access)
+## Vault mode (the same session, in early access)
 
 Same session shape. The connect box becomes a [ Connect your AI ] button, and
 the pasted key becomes an App key: provisioned inside the user's own account
@@ -98,7 +98,7 @@ for your app alone, capped, and revocable.
 // 1. user clicks [ Connect your AI ], which opens the Outlet grant screen
 const session = await Outlet.connect({
   appId: "app_yourapp",
-  providers: ["anthropic", "openai"],
+  providers: ["openai"],
   requestedCapUsd: 10,
 });
 
