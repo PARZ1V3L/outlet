@@ -6,6 +6,10 @@ name: Release
 # below keeps the intent explicit. prepublishOnly runs typecheck, tests, build.
 # The npm-side trusted publisher for this file allows direct npm publish
 # (npm's default for new connections is staged publishing only).
+#
+# Two jobs. test runs the typecheck and the suite with contents: read and
+# nothing else, so nothing in it can mint the OIDC token. publish needs test
+# and is the only job with id-token: write.
 
 on:
   push:
@@ -13,13 +17,41 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  publish:
-    name: Publish @useoutlet/sdk
+  test:
+    name: Typecheck and test
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - run: npm ci --ignore-scripts
+        working-directory: sdk
+
+      - run: npm run typecheck
+        working-directory: sdk
+
+      - run: npm test
+        working-directory: sdk
+
+  publish:
+    name: Publish @useoutlet/sdk
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
