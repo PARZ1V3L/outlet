@@ -22,6 +22,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "default": "./dist/ui/index.js"
+    },
     "./package.json": "./package.json"
   },
   "sideEffects": false,
