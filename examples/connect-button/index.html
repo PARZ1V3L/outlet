@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connect your AI · @useoutlet/sdk/ui demo</title>
+<!--
+  The Connect your AI button, mounted three times: direct, vault, both.
+  Direct works for real (the key is checked on this device, never sent).
+  Vault shows the grant request it would send with a placeholder app id and
+  does not navigate: the import map below swaps the SDK's redirect step for
+  vault-stub.js. No network. Serve the repo root and open
+  /examples/connect-button/ (build the SDK first: cd sdk && npm run build).
+-->
+<script type="importmap">
+{ "imports": { "../../sdk/dist/pkce.js": "./vault-stub.js" } }
+</script>
+<style>
+  body { margin: 0; font: 15px/1.5 system-ui, sans-serif; color: #18181a; background: #f4f2ec; }
+  @media (prefers-color-scheme: dark) { body { color: #faf8f3; background: #111113; } }
+  main { max-width: 920px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 34px; letter-spacing: -.04em; margin: 0 0 6px; }
+  .lede { opacity: .7; margin: 0 0 32px; }
+  section { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 24px 0; border-top: 1px solid #8884; }
+  @media (min-width: 720px) { section { grid-template-columns: 300px 1fr; align-items: start; } }
+  h2 { font-size: 18px; margin: 0 0 4px; }
+  section p { margin: 0 0 12px; opacity: .75; font-size: 14px; }
+  pre { margin: 0; padding: 12px 14px; background: #18181a; color: #d6f436; border-radius: 10px; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 44px; }
+  label { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; margin-right: 16px; }
+</style>
+<main>
+  <h1>Connect your AI</h1>
+  <p class="lede">One button, two doors. Three mounts of <code>mountConnectButton()</code> from <code>@useoutlet/sdk/ui</code>.</p>
+  <p>
+    <label><input type="radio" name="theme" value="auto" checked> auto</label>
+    <label><input type="radio" name="theme" value="light"> light</label>
+    <label><input type="radio" name="theme" value="dark"> dark</label>
+  </p>
+
+  <section>
+    <div>
+      <h2>direct</h2>
+      <p>Providers: OpenAI, Anthropic, Google. Paste a real key: the format is checked here and handed to <code>onSession</code>, masked below.</p>
+      <div id="direct"></div>
+    </div>
+    <pre id="direct-out" aria-live="polite"></pre>
+  </section>
+
+  <section>
+    <div>
+      <h2>vault</h2>
+      <p>Provider: OpenAI, app id <code>app_demo</code>. Continue to Outlet shows the grant request the SDK would send instead of leaving the page.</p>
+      <div id="vault"></div>
+    </div>
+    <pre id="vault-out" aria-live="polite"></pre>
+  </section>
+
+  <section>
+    <div>
+      <h2>both</h2>
+      <p>Providers: Anthropic and OpenAI. The Vault request names Anthropic, the first Vault-capable provider in the list.</p>
+      <div id="both"></div>
+    </div>
+    <pre id="both-out" aria-live="polite"></pre>
+  </section>
+</main>
+
+<script type="module">
+  import { mountConnectButton } from "../../sdk/dist/ui/index.js";
+  import { lastRequest } from "./vault-stub.js";
+
+  const out = (id) => document.getElementById(id + "-out");
+
+  /** Print a session with every key masked: only its known prefix, then its length. */
+  function masked(session) {
+    const keys = {};
+    for (const [provider, key] of Object.entries(session.keys)) {
+      const head = ["sk-svcacct-", "sk-proj-", "sk-ant-", "sk-", "AIza"].find((p) => key.startsWith(p)) ?? "";
+      keys[provider] = head + "…" + ` (${key.length} chars)`;
+    }
+    return JSON.stringify({ ...session, keys, capUsd: session.capUsd === Infinity ? "Infinity" : session.capUsd }, null, 2);
+  }
+
+  // The Vault stub rides the import map above. A browser without import maps
+  // would load the real pkce.js and reach the vault, so only Direct mounts there.
+  const mapped = typeof HTMLScriptElement.supports === "function" && HTMLScriptElement.supports("importmap");
+
+  const handles = {};
+  // Each Vault mount names one provider, so the provider in the recorded
+  // request says which pane it came from.
+  const vaultPane = new Map();
+  function mountAll(theme) {
+    for (const h of Object.values(handles)) h.destroy();
+    vaultPane.clear();
+    const common = {
+      theme,
+      redirectUri: location.origin + location.pathname,
+      requestedCapUsd: 10,
+      onError: (e) => console.warn("[outlet] onError", e),
+    };
+    handles.direct = mountConnectButton(document.getElementById("direct"), {
+      ...common, mode: "direct", providers: ["openai", "anthropic", "google"],
+      onSession: (s) => { out("direct").textContent = masked(s); },
+    });
+    if (!mapped) {
+      for (const id of ["vault", "both"]) {
+        out(id).textContent = "This browser has no import maps, so the Vault stub cannot load. Only the direct button is mounted.";
+      }
+      return;
+    }
+    handles.vault = mountConnectButton(document.getElementById("vault"), {
+      ...common, mode: "vault", providers: ["openai"], appId: "app_demo",
+      onSession: (s) => { out("vault").textContent = masked(s); },
+    });
+    vaultPane.set("openai", "vault");
+    handles.both = mountConnectButton(document.getElementById("both"), {
+      ...common, mode: "both", providers: ["anthropic", "openai"], appId: "app_demo",
+      onSession: (s) => { out("both").textContent = masked(s); },
+    });
+    vaultPane.set("anthropic", "both");
+  }
+
+  document.addEventListener("outlet-demo-redirect", () => {
+    const r = lastRequest();
+    const text = "Grant URL it would open: https://useoutlet.dev/grant/<request id>, minted by the vault in answer to\n" +
+      "POST " + r.url + "\n" + JSON.stringify(r.body, null, 2) +
+      "\n\nThe SDK navigates this tab there. This demo stops here.";
+    const pane = vaultPane.get(r.body.providers[0]);
+    if (pane) out(pane).textContent = text;
+  });
+
+  for (const radio of document.querySelectorAll('input[name="theme"]')) {
+    radio.addEventListener("change", () => mountAll(radio.value));
+  }
+  mountAll("auto");
+  window.outletDemo = handles;
+</script>
+</html>
