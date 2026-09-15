@@ -1,5 +1,17 @@
 # Changelog (@useoutlet/sdk)
 
+## 0.5.0
+
+### Added
+
+- `@useoutlet/sdk/ui` with `mountConnectButton()` for Direct and Vault.
+- Provider guides, Direct API key format checks, and connected states.
+
+### Changed
+
+- Build and test the package before the publishing job.
+- Document refresh-token rotation.
+
 ## 0.4.1 (2026-09-07)
 
 - README wording pass.
