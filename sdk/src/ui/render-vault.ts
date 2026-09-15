@@ -53,8 +53,8 @@ export function renderVaultConnected(view: View, cfg: Config, a: Actions): Rende
   return { sheet, heading: m.heading, focus: done };
 }
 
-export function renderVaultReturnError(view: View, cfg: Config, a: Actions): Rendered {
-  const s = vault[view.id as "vault-return-error" | "vault-anthropic-return-error"];
+export function renderVaultError(view: View, cfg: Config, a: Actions): Rendered {
+  const s = vault[view.id as "vault-start-error" | "vault-anthropic-start-error" | "vault-return-error" | "vault-anthropic-return-error"];
   const sheet = frame(view, cfg, a, { header: s.header, mode: "vault" });
   const head = heading(s.title);
   sheet.appendChild(head);

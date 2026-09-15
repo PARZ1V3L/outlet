@@ -16,7 +16,7 @@ import {
 import type { Actions, Rendered } from "./render-shell.js";
 import {
   renderVaultChecking, renderVaultConnected, renderVaultExplain, renderVaultLeaving,
-  renderVaultReturnError,
+  renderVaultError,
 } from "./render-vault.js";
 import {
   type Config, type View, connectedView, directStart, directView, openingView, parentView,
@@ -131,7 +131,7 @@ export class Widget {
     if (id.endsWith("-explain") || id.endsWith("-only")) return renderVaultExplain(view, cfg, a);
     if (id.endsWith("-leaving")) return renderVaultLeaving(view, cfg, a);
     if (id.endsWith("-return-checking")) return renderVaultChecking(view, cfg, a);
-    if (id.endsWith("-return-error")) return renderVaultReturnError(view, cfg, a);
+    if (id.endsWith("-return-error") || id.endsWith("-start-error")) return renderVaultError(view, cfg, a);
     return renderVaultConnected(view, cfg, a);
   }
 
@@ -205,13 +205,14 @@ export class Widget {
   }
 
   /** Continue to Outlet: the leaving screen, then the full same-tab
-   *  redirect. If the page is still here, the button is the retry. */
+   *  redirect. A failed start gets an error screen and an explicit retry. */
   private async continueToOutlet(): Promise<void> {
     const vaultProvider = this.cfg.vault;
     if (!vaultProvider) return;
     const leaving = vaultView(this.cfg, "leaving");
     if (this.view?.id !== leaving.id) this.show(leaving);
-    const button = this.rendered?.sheet.querySelector<HTMLButtonElement>("button.primary") ?? null;
+    const rendered = this.rendered;
+    const button = rendered?.sheet.querySelector<HTMLButtonElement>("button.primary") ?? null;
     if (button) button.disabled = true;
     try {
       await connectRedirect({
@@ -222,6 +223,9 @@ export class Widget {
         baseUrl: this.opts.baseUrl,
       });
     } catch (e) {
+      if (!this.destroyed && this.overlay.isOpen && this.rendered === rendered) {
+        this.show(vaultView(this.cfg, "start-error"));
+      }
       this.report(e);
     } finally {
       if (button) {

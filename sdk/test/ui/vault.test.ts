@@ -83,14 +83,17 @@ describe("Continue to Outlet", () => {
     await flush();
     expect(button.disabled).toBe(false);
   });
-  it("a failed start keeps the leaving screen with its button as the retry, and reports", async () => {
+  it("a failed start shows its error and retries, and reports", async () => {
     redirect.mockRejectedValueOnce(new Error("vault down"));
     const m = mount();
     m.handle.open();
     click("Vault");
     click("Continue to Outlet");
     await flush();
-    expect(state()).toBe("vault-leaving");
+    expect(state()).toBe("vault-start-error");
+    expect(heading()).toBe("Couldn’t open Outlet");
+    expect(sheet().textContent).toContain("Your Vault connection hasn’t started.");
+    expect(sheet().querySelector(".spinner")).toBeNull();
     expect(m.onError).toHaveBeenCalledTimes(1);
     const button = sheet().querySelector("button.primary") as HTMLButtonElement;
     expect(button.disabled).toBe(false);
@@ -101,7 +104,7 @@ describe("Continue to Outlet", () => {
     expect(state()).toBe("vault-leaving");
     expect(trigger(m.target).className).toBe("fixed-button");
   });
-  it("a failed retry gives focus back to the retry when the disabled button dropped it", async () => {
+  it("a failed retry focuses the error heading when the disabled button dropped focus", async () => {
     const m = mount();
     m.handle.open();
     click("Vault");
@@ -119,7 +122,32 @@ describe("Continue to Outlet", () => {
     await flush();
     expect(m.onError).toHaveBeenCalledTimes(1);
     expect(button.disabled).toBe(false);
-    expect(overlayRoot().activeElement).toBe(button);
+    expect(state()).toBe("vault-start-error");
+    expect(activeInSheet()?.textContent).toBe("Couldn’t open Outlet");
+  });
+  it("Anthropic start errors retain their provider and Back returns to its explanation", async () => {
+    redirect.mockRejectedValueOnce(new Error("vault down"));
+    const m = mount({ providers: ["anthropic"] });
+    m.handle.open(); click("Vault"); click("Continue to Outlet");
+    await flush();
+    expect(state()).toBe("vault-anthropic-start-error");
+    expect(sheet().textContent).toContain("Vault · Anthropic");
+    click("Back");
+    expect(state()).toBe("vault-anthropic-explain");
+  });
+  it.each(["back", "reopen", "destroy"])("a late start failure after %s does not replace the current screen", async (action) => {
+    const d = deferred<never>();
+    redirect.mockReturnValueOnce(d.promise);
+    const m = mount();
+    m.handle.open(); click("Vault"); click("Continue to Outlet");
+    if (action === "back") click("Back");
+    if (action === "reopen") { m.handle.close(); m.handle.open(); }
+    if (action === "destroy") m.handle.destroy();
+    d.reject(new Error("late failure"));
+    await flush();
+    expect(m.onError).toHaveBeenCalledTimes(1);
+    if (action === "destroy") expect(overlayHost()).toBeNull();
+    else expect(state()).toBe(action === "back" ? "vault-explain" : "choose");
   });
   it("Anthropic leaves through its own screens", () => {
     redirect.mockResolvedValue(undefined as never);

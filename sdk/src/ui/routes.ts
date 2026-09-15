@@ -32,12 +32,14 @@ export type StateId =
   | "vault-only"
   | "vault-leaving"
   | "vault-connected"
+  | "vault-start-error"
   | "vault-return-error"
   | "vault-return-checking"
   | "vault-anthropic-explain"
   | "vault-anthropic-only"
   | "vault-anthropic-leaving"
   | "vault-anthropic-connected"
+  | "vault-anthropic-start-error"
   | "vault-anthropic-return-error"
   | "vault-anthropic-return-checking";
 
@@ -52,7 +54,7 @@ export interface View {
   fresh?: boolean;
 }
 
-export type VaultStep = "explain" | "leaving" | "connected" | "return-error" | "return-checking";
+export type VaultStep = "explain" | "leaving" | "connected" | "start-error" | "return-error" | "return-checking";
 
 export function directView(id: "entry" | "guide" | "paste" | "checking" | "connected", provider: UiProvider): View {
   return { id: `direct-${provider}-${id}`, provider };
@@ -127,6 +129,6 @@ export function parentView(cfg: Config, view: View): View | null {
     return directView("entry", provider);
   }
   if (id === "vault-explain" || id === "vault-anthropic-explain") return { id: "choose" };
-  // leaving and return-error go back to the explanation
+  // Leaving and errors go back to the explanation
   return vaultView(cfg, "explain");
 }

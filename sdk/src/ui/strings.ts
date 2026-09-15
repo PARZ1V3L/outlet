@@ -1,7 +1,6 @@
 /**
  * Every visible word in the Connect your AI widget, keyed by the design's
- * state ids. All of it is DRAFT until Parz's word pass; his changes land here
- * and nowhere else. `{provider}` is the provider the person chose, `{other}`
+ * state ids. `{provider}` is the provider the person chose, `{other}`
  * the one a pasted key looks like, both filled from `providers` below.
  */
 import type { UiProvider } from "./types.js";
@@ -48,7 +47,6 @@ const providerList = {
   title: "Choose your provider",
   lead: "Use your own API key in Direct.",
 };
-
 
 const pasteLines = ["Checked on this device.", "Passed to this app.", "Never sent to Outlet."];
 const connectedLines = ["Your Direct API key is ready for this app.", "Only the format was checked."];
@@ -220,8 +218,8 @@ const vaultConnectedLines = [
   "This app has its own capped Vault App key.",
   "Revoke Vault access any time on useoutlet.dev.",
 ];
+const startError = { title: "Couldn’t open Outlet", lines: ["Your Vault connection hasn’t started."], retry: "Try again" };
 const manageUrl = "https://useoutlet.dev/account/";
-
 
 /** Single-mode variants keep the same words, so vault-only and
  *  vault-anthropic-only share the explain entries. Split them to differ. */
@@ -262,6 +260,7 @@ export const vault = {
     manageUrl,
     done: "Done",
   } satisfies VaultStatusStrings as VaultStatusStrings,
+  "vault-start-error": { header: "Vault · OpenAI", ...startError } satisfies VaultStatusStrings as VaultStatusStrings,
   "vault-return-error": {
     header: "Vault · OpenAI",
     title: "Vault is not connected",
@@ -290,6 +289,7 @@ export const vault = {
     manageUrl,
     done: "Done",
   } satisfies VaultStatusStrings as VaultStatusStrings,
+  "vault-anthropic-start-error": { header: "Vault · Anthropic", ...startError } satisfies VaultStatusStrings as VaultStatusStrings,
   "vault-anthropic-return-error": {
     header: "Vault · Anthropic",
     title: "Vault is not connected",
