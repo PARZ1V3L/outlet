@@ -40,7 +40,7 @@ class Connect : ComponentActivity() {
         val challenge = b64url(MessageDigest.getInstance("SHA-256").digest(verifier.toByteArray()))
         val grant = post("/grants", JSONObject().put("app_id", "app_yourapp").put("state", state)
             .put("providers", JSONArray().put("anthropic"))
-            .put("redirect_uri", "com.yourapp:/outlet") // byte for byte what you registered
+            .put("redirect_uri", "com.yourapp:/outlet/return") // byte for byte what you registered
             .put("code_challenge", challenge).put("code_challenge_method", "S256"))
         grantRequestId = grant.getString("grant_request_id")
         val grantUrl = Uri.parse(grant.getString("grant_url"))

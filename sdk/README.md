@@ -126,7 +126,7 @@ the redirect in two calls:
 await Outlet.connectRedirect({
   appId: "app_yourapp",
   providers: ["anthropic"],
-  redirectUri: "https://yourapp.com/outlet/callback",
+  redirectUri: "https://yourapp.com/outlet/return",
 });
 
 // on the page served at redirectUri: verifies state, exchanges the code
@@ -141,11 +141,14 @@ const fresh = await Outlet.refresh(session.grantId, { refreshToken: session.refr
 The provider key arrives only on the back-channel exchange, never in the
 redirect URL. The `refreshToken` belongs to this one grant.
 
+Outlet registers `http://localhost/outlet/return` for every app. It matches
+any port.
+
 ## Phones
 
 The public-client flow works inside iPhone and Android apps. Open the
 grant URL in the system browser sheet, take the code back on your
-registered return address (a private scheme like com.yourapp:/outlet,
+registered return address (a private scheme like com.yourapp:/outlet/return,
 or your website), then call `exchangeCode()`. React Native has no Web
 Crypto: pass `crypto: { getRandomValues, sha256 }` from expo-crypto to
 `createGrant()`. Guide: https://useoutlet.dev/docs/dev/mobile

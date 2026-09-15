@@ -2,6 +2,7 @@
 // Matches @useoutlet/sdk 0.4.0 (createGrant + exchangeCode with the crypto
 // option; 0.3.0 throws on phones). Written 2026-09-04; it type-checks with
 // tsc against the SDK source and was not run on a device.
+// Register com.yourapp:/outlet/return as the return address.
 // Needs "scheme": "com.yourapp" in app.json so the sheet can come back
 // (a development build; Expo Go ignores the scheme field).
 import { createGrant, exchangeCode, type PkceCrypto } from "@useoutlet/sdk";

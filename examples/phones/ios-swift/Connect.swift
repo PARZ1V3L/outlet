@@ -5,7 +5,7 @@ import AuthenticationServices
 import CryptoKit
 import UIKit
 let vault = "https://api.useoutlet.dev/v0", appID = "app_yourapp"
-let redirectURI = "com.yourapp:/outlet"  // byte-identical to the address registered with Outlet
+let redirectURI = "com.yourapp:/outlet/return"  // byte-identical to the address registered with Outlet
 enum ConnectError: Error { case noEntropy, sheetDidNotOpen, noCallback, stateMismatch, vault, keychain }
 @MainActor final class OutletConnect: NSObject, ASWebAuthenticationPresentationContextProviding {
     private let window: UIWindow
