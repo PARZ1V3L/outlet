@@ -42,6 +42,7 @@ export interface VaultExplainStrings {
   header: string;
   title: string;
   intro: string[];
+  steps?: Array<{ title: string; body: string; note?: string }>;
   details: string;
   lines: string[];
   fine: string;

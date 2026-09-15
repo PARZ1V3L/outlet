@@ -83,6 +83,24 @@ describe("the dialog", () => {
     expect(activeInSheet()?.getAttribute("aria-label")).toBe("Close");
   });
 
+  it("reaches the Vault access disclosure from the heading with Tab", () => {
+    const { handle } = mount({ mode: "vault", providers: ["anthropic"] });
+    handle.open();
+    const title = sheet().querySelector("h1") as HTMLElement;
+    const details = sheet().querySelector("details") as HTMLDetailsElement;
+    const summary = details.querySelector("summary") as HTMLElement;
+    expect(details.open).toBe(false);
+    title.focus();
+    key(title, "Tab");
+    expect(activeInSheet()).toBe(summary);
+    summary.click();
+    expect(details.open).toBe(true);
+    expect(details.textContent).toContain("Reporting delays can allow spending above the cap.");
+    expect(sheet().querySelector('[aria-label="Back"]')).toBeNull();
+    click("Close");
+    expect(overlayHost()).toBeNull();
+  });
+
   it("keeps Tab inside on a screen whose only control sits above the heading", async () => {
     const d = deferred<void>();
     const m = mount();

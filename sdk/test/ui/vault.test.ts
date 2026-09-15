@@ -42,7 +42,12 @@ describe("explain", () => {
     handle.open();
     click("Vault");
     expect(state()).toBe("vault-anthropic-explain");
-    expect(sheet().textContent).toContain("Make the Anthropic Vault App key by hand.");
+    expect(heading()).toBe("Connect Anthropic");
+    expect(Array.from(sheet().querySelectorAll(".vault-steps h2"), h => h.textContent)).toEqual([
+      "Connect your account", "Approve this app", "Create its Vault App key",
+    ]);
+    expect(sheet().querySelector(".vault-steps li:first-child .step-trust")?.textContent).toBe("Never given to apps.");
+    expect(sheet().textContent).toContain("Make it on Anthropic’s website, then paste it into Outlet.");
     expect(sheet().querySelectorAll("button.provider")).toHaveLength(0);
   });
   it("vault only: no Back, the -only screens", () => {
@@ -54,6 +59,8 @@ describe("explain", () => {
     const b = mount({ mode: "vault", providers: ["anthropic"] });
     b.handle.open();
     expect(state()).toBe("vault-anthropic-only");
+    expect(heading()).toBe("Connect Anthropic");
+    expect(sheet().querySelectorAll(".vault-steps li")).toHaveLength(3);
   });
 });
 

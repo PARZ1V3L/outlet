@@ -199,10 +199,7 @@ export const directErrors = {
 };
 
 const vaultFine = "Vault caps use provider spend reports. Reporting delays can allow spending above the cap.";
-const vaultIntro = [
-  "Use your Vault admin key on useoutlet.dev.",
-  "Your Vault admin key is never given to apps.",
-];
+const vaultIntro = ["Use your Vault admin key on useoutlet.dev.", "Your Vault admin key is never given to apps."];
 const vaultAccess = [
   "This app gets its own capped Vault App key in your account.",
   "Revoke Vault access any time.",
@@ -229,8 +226,13 @@ const explainOpenai: VaultExplainStrings = {
 };
 const explainAnthropic: VaultExplainStrings = {
   header: "Vault · Anthropic",
-  title: "Connect your account",
-  intro: [...vaultIntro, "Make the Anthropic Vault App key by hand."],
+  title: "Connect Anthropic",
+  intro: [],
+  steps: [
+    { title: "Connect your account", body: "Add your Vault admin key on useoutlet.dev.", note: "Never given to apps." },
+    { title: "Approve this app", body: "Review its Vault access and cap." },
+    { title: "Create its Vault App key", body: "Make it on Anthropic’s website, then paste it into Outlet." },
+  ],
   details: "Vault access and caps",
   lines: vaultAccess,
   fine: vaultFine,

@@ -127,6 +127,29 @@ background:var(--accent);color:#18181a;padding:12px;font-size:13px;font-weight:7
 .vault-details[open]{padding-bottom:16px}
 .vault-details .fine{margin-bottom:0}
 
+.sheet.vault-step-sheet{padding:0;border:0;background:transparent;box-shadow:none;scrollbar-gutter:auto}
+.vault-step-card{padding:26px 28px 28px;border:1px solid var(--line);border-radius:20px;background:var(--bg);box-shadow:0 24px 80px #0003}
+.vault-step-card .top{margin-bottom:28px}
+.vault-step-card h1{font-size:28px;margin:0}
+.vault-steps{list-style:none;display:grid;gap:23px;margin:27px 0 0}
+.vault-steps li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:13px;align-items:start}
+.vault-steps .step-number{width:24px;height:24px;border:1px solid var(--line);border-radius:50%;text-align:center;color:var(--muted);font:500 12px/22px ui-monospace,monospace}
+.vault-steps h2{color:var(--ink);font-size:15px;font-weight:800;line-height:1.5;letter-spacing:-.015em;margin:0 0 4px}
+.vault-steps p{font-size:13px;line-height:1.6;margin:0}
+.vault-steps .step-trust{display:flex;align-items:center;gap:9px;margin-top:7px;font-size:12px}
+.step-trust svg{width:15px;height:15px}
+.vault-step-card .vault-details{margin-top:25px}
+.vault-step-card summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;list-style:none;font-weight:700}
+.vault-step-card summary::-webkit-details-marker{display:none}
+.vault-step-card summary svg{width:16px;height:16px}
+.vault-step-card details[open] summary svg{transform:rotate(45deg)}
+.vault-detail-body{display:grid;gap:10px}
+.vault-detail-body p{font-size:13px;line-height:1.6;margin:0}
+.vault-step-card .primary{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px}
+.vault-step-card .primary svg{width:18px;height:18px}
+.vault-step-sheet>.foot{margin:14px 0 0;font-size:12px}
+@media(max-width:380px){.vault-step-card{padding:22px 21px 24px}.vault-step-card h1{font-size:26px}.vault-steps li{gap:10px}}
+
 /* the connect box */
 .field-label{display:block;font-size:13px;font-weight:700;margin:24px 0 10px}
 .connect-box{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:13px;background:var(--field);padding:7px}

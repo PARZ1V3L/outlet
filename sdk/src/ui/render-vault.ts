@@ -1,11 +1,15 @@
 /** The Vault screens: explain, leaving, the return, connected. */
-import { h } from "./dom.js";
+import { h, svg } from "./dom.js";
 import type { Config, View } from "./routes.js";
 import {
   type Actions, type Rendered, actions, bullets, closeButton, externalLink, finish, frame,
   heading, message, primary,
 } from "./render-shell.js";
 import { vault } from "./strings.js";
+
+const LOCK = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></svg>';
+const PLUS = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+const NEXT = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
 
 type ExplainId = "vault-explain" | "vault-only" | "vault-anthropic-explain" | "vault-anthropic-only";
 
@@ -14,9 +18,24 @@ export function renderVaultExplain(view: View, cfg: Config, a: Actions): Rendere
   const sheet = frame(view, cfg, a, { header: s.header, mode: "vault" });
   const head = heading(s.title);
   sheet.append(head, ...s.intro.map(line => h("p", {}, line)));
+  if (s.steps) {
+    sheet.appendChild(h("ol", { class: "vault-steps", role: "list" }, ...s.steps.map((step, i) =>
+      h("li", {}, h("span", { class: "step-number", "aria-hidden": "true" }, String(i + 1)),
+        h("div", {}, h("h2", {}, step.title), h("p", {}, step.body),
+          step.note && h("p", { class: "step-trust" }, svg(LOCK), step.note))))));
+  }
+  const detailBody = s.steps
+    ? h("div", { class: "vault-detail-body" }, ...s.lines.map(line => h("p", {}, line)), h("p", {}, s.fine))
+    : h("div", {}, bullets(s.lines), h("p", { class: "fine" }, s.fine));
   sheet.appendChild(h("details", { class: "vault-details" },
-    h("summary", {}, s.details), bullets(s.lines), h("p", { class: "fine" }, s.fine)));
-  sheet.appendChild(actions(primary(s.continue, (b) => a.continueToOutlet(b))));
+    h("summary", { tabindex: "0" }, s.details, s.steps && svg(PLUS)), detailBody));
+  const next = primary(s.continue, (b) => a.continueToOutlet(b));
+  if (s.steps) next.appendChild(svg(NEXT));
+  sheet.appendChild(actions(next));
+  if (s.steps) {
+    sheet.classList.add("vault-step-sheet");
+    sheet.appendChild(h("div", { class: "vault-step-card" }, ...Array.from(sheet.childNodes)));
+  }
   finish(sheet);
   return { sheet, heading: head };
 }
