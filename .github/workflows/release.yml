@@ -1,16 +1,7 @@
 name: Release
 
-# Publishes @useoutlet/sdk to npm from a v* tag with OIDC trusted publishing.
-# No npm token anywhere: the registry trusts this workflow file in this repo.
-# Provenance is generated automatically under trusted publishing; the flag
-# below keeps the intent explicit. prepublishOnly runs typecheck, tests, build.
-# The npm-side trusted publisher for this file allows direct npm publish
-# (npm's default for new connections is staged publishing only).
-#
-# Two jobs. test runs the typecheck and the suite with contents: read and
-# nothing else, so nothing in it can mint the OIDC token. publish needs test
-# and is the only job with id-token: write.
-
+# Build and test without a publish credential. Only the finished tarball
+# reaches the job that can publish through npm trusted publishing.
 on:
   push:
     tags: ["v*"]
@@ -19,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Typecheck and test
+  build:
+    name: Typecheck, test and build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -29,40 +20,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
           package-manager-cache: false
-
-      - run: npm ci --ignore-scripts
-        working-directory: sdk
-
-      - run: npm run typecheck
-        working-directory: sdk
-
-      - run: npm test
-        working-directory: sdk
-
-  publish:
-    name: Publish @useoutlet/sdk
-    needs: test
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: "24"
-          registry-url: "https://registry.npmjs.org"
-          package-manager-cache: false
-
       - name: Tag must match sdk/package.json
         run: |
           want="v$(node -p "require('./sdk/package.json').version")"
@@ -70,7 +31,36 @@ jobs:
             echo "tag $GITHUB_REF_NAME does not match sdk/package.json ($want)"
             exit 1
           fi
+      - run: npm ci --ignore-scripts
+        working-directory: sdk
+      - run: npm run typecheck
+        working-directory: sdk
+      - run: npm test
+        working-directory: sdk
+      - run: npm run build
+        working-directory: sdk
+      - run: npm pack --ignore-scripts
+        working-directory: sdk
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tarball
+          path: sdk/useoutlet-sdk-*.tgz
+          if-no-files-found: error
 
+  publish:
+    name: Publish @useoutlet/sdk
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
       - name: npm must support trusted publishing (11.5.1 or later)
         run: |
           have="$(npm --version)"
@@ -79,10 +69,8 @@ jobs:
             echo "npm $have is below 11.5.1"
             exit 1
           fi
-
-      # Install scripts of dependencies never see the OIDC credential.
-      - run: npm ci --ignore-scripts
-        working-directory: sdk
-
-      - run: npm publish --provenance --access public
-        working-directory: sdk
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: tarball
+      # No checkout, dependency install or lifecycle scripts in this job.
+      - run: npm publish ./useoutlet-sdk-*.tgz --provenance --access public --ignore-scripts
