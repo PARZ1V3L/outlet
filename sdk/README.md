@@ -133,8 +133,9 @@ await Outlet.connectRedirect({
 const session = await Outlet.handleRedirect();
 const ai = new Anthropic({ apiKey: session.keys.anthropic });
 
-// session.refreshToken (not an app secret) authorizes later calls:
-await Outlet.refresh(session.grantId, { refreshToken: session.refreshToken });
+// session.refreshToken (not an app secret) authorizes later calls.
+const fresh = await Outlet.refresh(session.grantId, { refreshToken: session.refreshToken });
+// fresh.refreshToken replaces the one you sent; the old one now gets 401. Store the new one.
 ```
 
 The provider key arrives only on the back-channel exchange, never in the
