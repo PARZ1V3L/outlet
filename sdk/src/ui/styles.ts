@@ -115,6 +115,18 @@ scrollbar-gutter:stable;padding:24px 28px 20px}
 .guide{margin-top:8px;font-size:12px}
 .guide+.foot{margin-top:12px}
 
+.guide-screen h1{margin-bottom:20px}
+.guide-screen .guide-open{display:flex;justify-content:center;width:100%;min-height:49px;border-radius:10px;
+background:var(--accent);color:#18181a;padding:12px;font-size:13px;font-weight:750;text-decoration:none}
+.guide-screen .overview-steps li{color:var(--ink)}
+.guide-screen .actions{border-top:1px solid var(--line);padding-top:12px;margin-top:20px}
+.guide-screen .secondary{color:var(--ink);text-decoration:none}
+.guide-screen>.guide{display:flex;justify-content:center;margin:0}
+.vault-details{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:20px}
+.vault-details summary{cursor:pointer;min-height:48px;padding:13px 0;color:var(--muted);font-size:13px;font-weight:650}
+.vault-details[open]{padding-bottom:16px}
+.vault-details .fine{margin-bottom:0}
+
 /* the connect box */
 .field-label{display:block;font-size:13px;font-weight:700;margin:24px 0 10px}
 .connect-box{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:13px;background:var(--field);padding:7px}

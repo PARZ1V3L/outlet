@@ -67,18 +67,19 @@ export function renderGuide(view: View, cfg: Config, a: Actions): Rendered {
   const p = view.provider as UiProvider;
   const s = direct[`direct-${p}-guide`];
   const sheet = frame(view, cfg, a, { header: s.header, mode: "direct" });
+  sheet.classList.add("guide-screen");
   const head = heading(s.title);
   sheet.appendChild(head);
   if (s.steps) {
     const [open, ...rest] = s.steps;
     sheet.appendChild(h("ol", { class: "overview-steps" },
-      h("li", {}, externalLink(open, s.linkUrl)),
+      h("li", {}, externalLink(open, s.linkUrl, "guide-open")),
       ...rest.map((t) => h("li", {}, t))));
   } else {
     sheet.append(...paragraphs(s.lines ?? []));
-    sheet.appendChild(externalLink(s.link ?? "", s.linkUrl, "provider-link"));
+    sheet.appendChild(externalLink(s.link ?? "", s.linkUrl, "guide-open"));
   }
-  sheet.appendChild(actions(primary(s.paste, () => a.go(directView("paste", p)))));
+  sheet.appendChild(actions(secondary(s.paste, () => a.go(directView("paste", p)))));
   sheet.appendChild(externalLink(s.guide, s.guideUrl, "guide"));
   finish(sheet);
   return { sheet, heading: head };

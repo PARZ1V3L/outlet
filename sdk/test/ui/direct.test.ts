@@ -55,7 +55,7 @@ describe("the Direct walk", () => {
     expect(sheet().textContent).toContain("Never sent to Outlet.");
   });
 
-  it("Google gets a link pill and the Google full guide, no numbered steps", () => {
+  it("Google gets a provider website action and the Google full guide, no numbered steps", () => {
     const { handle } = mount();
     handle.open();
     click("Direct");
@@ -65,7 +65,7 @@ describe("the Direct walk", () => {
     click("Get my Direct API key");
     expect(state()).toBe("direct-google-guide");
     expect(sheet().querySelector("ol")).toBeNull();
-    const pill = sheet().querySelector("a.provider-link") as HTMLAnchorElement;
+    const pill = sheet().querySelector("a.guide-open") as HTMLAnchorElement;
     expect(pill.textContent?.trim()).toBe("Open the Google website");
     expect(pill.href).toBe("https://aistudio.google.com/api-keys");
     expect((sheet().querySelector("a.guide") as HTMLAnchorElement).href).toBe("https://ai.google.dev/gemini-api/docs/api-key");

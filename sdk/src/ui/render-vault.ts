@@ -13,7 +13,9 @@ export function renderVaultExplain(view: View, cfg: Config, a: Actions): Rendere
   const s = vault[view.id as ExplainId];
   const sheet = frame(view, cfg, a, { header: s.header, mode: "vault" });
   const head = heading(s.title);
-  sheet.append(head, bullets(s.lines), h("p", { class: "fine" }, s.fine));
+  sheet.append(head, ...s.intro.map(line => h("p", {}, line)));
+  sheet.appendChild(h("details", { class: "vault-details" },
+    h("summary", {}, s.details), bullets(s.lines), h("p", { class: "fine" }, s.fine)));
   sheet.appendChild(actions(primary(s.continue, (b) => a.continueToOutlet(b))));
   finish(sheet);
   return { sheet, heading: head };

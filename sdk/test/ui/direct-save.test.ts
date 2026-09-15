@@ -39,7 +39,7 @@ describe("Save", () => {
     await flush();
     expect(state()).toBe("direct-openai-connected");
     expect(heading()).toBe("Connected to OpenAI");
-    expect(sheet().textContent).toContain("Only the format was checked.");
+    expect(sheet().textContent).toContain("Your Direct API key is ready for this app.");
     expect(sheet().querySelector(".wink")).not.toBeNull();
     expect(live()).toBe("Connected to OpenAI");
     const b = trigger(m.target);

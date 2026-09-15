@@ -49,7 +49,7 @@ const providerList = {
 };
 
 const pasteLines = ["Checked on this device.", "Passed to this app.", "Never sent to Outlet."];
-const connectedLines = ["Your Direct API key is ready for this app.", "Only the format was checked."];
+const connectedLines = ["Your Direct API key is ready for this app."];
 
 export const direct = {
   "direct-provider": providerList,
@@ -199,17 +199,12 @@ export const directErrors = {
 };
 
 const vaultFine = "Vault caps use provider spend reports. Reporting delays can allow spending above the cap.";
-const vaultOpenaiLines = [
+const vaultIntro = [
   "Use your Vault admin key on useoutlet.dev.",
-  "This app gets its own capped Vault App key in your account.",
   "Your Vault admin key is never given to apps.",
-  "Revoke Vault access any time.",
 ];
-const vaultAnthropicLines = [
-  "Use your Vault admin key on useoutlet.dev.",
+const vaultAccess = [
   "This app gets its own capped Vault App key in your account.",
-  "Make the Anthropic Vault App key by hand.",
-  "Your Vault admin key is never given to apps.",
   "Revoke Vault access any time.",
 ];
 const leavingLines = ["Review Vault access on useoutlet.dev.", "You’ll return here after approval."];
@@ -226,14 +221,18 @@ const manageUrl = "https://useoutlet.dev/account/";
 const explainOpenai: VaultExplainStrings = {
   header: "Vault · OpenAI",
   title: "Connect your account",
-  lines: vaultOpenaiLines,
+  intro: vaultIntro,
+  details: "Vault access and caps",
+  lines: vaultAccess,
   fine: vaultFine,
   continue: "Continue to Outlet",
 };
 const explainAnthropic: VaultExplainStrings = {
   header: "Vault · Anthropic",
   title: "Connect your account",
-  lines: vaultAnthropicLines,
+  intro: [...vaultIntro, "Make the Anthropic Vault App key by hand."],
+  details: "Vault access and caps",
+  lines: vaultAccess,
   fine: vaultFine,
   continue: "Continue to Outlet",
 };

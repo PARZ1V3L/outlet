@@ -41,6 +41,8 @@ export interface StatusStrings {
 export interface VaultExplainStrings {
   header: string;
   title: string;
+  intro: string[];
+  details: string;
   lines: string[];
   fine: string;
   continue: string;
