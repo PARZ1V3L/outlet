@@ -400,9 +400,9 @@ Normative behavior:
 Outlet.connect(opts: {
   appId: string;
   providers: ("anthropic" | "openai" | "google")[];
-  requestedCapUsd?: number;          // the app's ask; user-side lowering at
-                                     // grant time is a planned grant-screen
-                                     // feature, not yet implemented
+  requestedCapUsd?: number;          // the app's ask, shown as the prefilled
+                                     // suggestion; the user sets the cap on
+                                     // the approval card, $1 or more
   redirectUri?: string;
 }): Promise<OutletSession>
 
