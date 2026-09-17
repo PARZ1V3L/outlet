@@ -26,7 +26,8 @@ directly with the official SDK. Outlet is **never in the data path**.
 
 ## Building with an AI? Paste this.
 
-Your AI adds the Connect your AI button for you. Your invite brings the app id.
+Your AI adds the Connect your AI button for you. The same button can offer
+Direct, Vault or both. Your invite brings the app id.
 
 ```text
 Add Outlet to this app so users can connect their own AI account.
@@ -88,9 +89,8 @@ safety check, since their key formats vary.
 
 ## Vault mode (the same session, in early access)
 
-Same session shape. The connect box becomes a [ Connect your AI ] button, and
-the pasted key becomes an App key: provisioned inside the user's own account
-for your app alone, capped, and revocable.
+Same session shape. The pasted key becomes an App key: provisioned inside the
+user's own account for your app alone, capped, and revocable.
 
 ```ts
 // NOTE: vault mode is by invite during early access. Your invite brings your app_id: useoutlet.dev
