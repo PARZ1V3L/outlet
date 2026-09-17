@@ -65,7 +65,7 @@ export const direct = {
   "direct-openai-guide": {
     header: "Direct · OpenAI",
     title: "Get your Direct API key",
-    steps: ["Open the OpenAI website", "Create a Direct API key.", "Copy it and return here."],
+    steps: ["Open the OpenAI website", "Create an API key. OpenAI calls it a secret key.", "Copy it and return here."],
     linkUrl: "https://platform.openai.com/api-keys",
     paste: "Paste my Direct API key",
     guide: "Full Direct guide",
@@ -97,7 +97,7 @@ export const direct = {
   "direct-anthropic-guide": {
     header: "Direct · Anthropic",
     title: "Get your Direct API key",
-    steps: ["Open the Anthropic website", "Create a Direct API key.", "Copy it and return here."],
+    steps: ["Open the Anthropic website", "Create an API key.", "Copy it and return here."],
     linkUrl: "https://platform.claude.com/settings/keys",
     paste: "Paste my Direct API key",
     guide: "Full Direct guide",

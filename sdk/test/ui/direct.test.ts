@@ -37,7 +37,7 @@ describe("the Direct walk", () => {
     click("Get my Direct API key");
     expect(state()).toBe("direct-openai-guide");
     const steps = Array.from(sheet().querySelectorAll("ol li")).map((li) => li.textContent?.trim());
-    expect(steps).toEqual(["Open the OpenAI website", "Create a Direct API key.", "Copy it and return here."]);
+    expect(steps).toEqual(["Open the OpenAI website", "Create an API key. OpenAI calls it a secret key.", "Copy it and return here."]);
     const link = sheet().querySelector("ol a") as HTMLAnchorElement;
     expect(link.href).toBe("https://platform.openai.com/api-keys");
     expect(link.target).toBe("_blank");
@@ -80,6 +80,8 @@ describe("the Direct walk", () => {
     click("Anthropic");
     expect(sheet().textContent).toContain("Anthropic API credits are billed separately from Claude subscriptions.");
     click("Get my Direct API key");
+    const steps = Array.from(sheet().querySelectorAll("ol li")).map((li) => li.textContent?.trim());
+    expect(steps).toEqual(["Open the Anthropic website", "Create an API key.", "Copy it and return here."]);
     expect((sheet().querySelector("ol a") as HTMLAnchorElement).href).toBe("https://platform.claude.com/settings/keys");
   });
 
