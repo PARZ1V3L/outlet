@@ -1,6 +1,6 @@
 # Changelog (@useoutlet/sdk)
 
-0.5.1: the Direct guide's second step uses the provider's own name for the key.
+0.5.1: provider key names in Direct guides, shared modal layout with visible actions, and draft-preserving Direct back navigation.
 
 ## 0.5.0
 

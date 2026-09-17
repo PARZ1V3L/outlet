@@ -122,7 +122,8 @@ export class Overlay {
     target.focus({ preventScroll: true });
     for (const n of old) n.remove();
     // A new screen starts at its top; a focus target further down stays in view.
-    sheet.scrollTop = 0;
+    const body = sheet.querySelector<HTMLElement>(".sheet-body");
+    if (body) body.scrollTop = 0;
     if (target !== r.heading && typeof target.scrollIntoView === "function") {
       target.scrollIntoView({ block: "nearest" });
     }

@@ -111,13 +111,41 @@ describe("the field is cleared when the flow is left", () => {
     expect(field.value).toBe("");
     expect(overlayHost()).toBeNull();
   });
-  it("Back clears it", () => {
+  it("Back clears the detached field and restores its draft on return from entry", () => {
     toPaste();
     const field = input();
     field.value = OPENAI_KEY;
     click("Back");
     expect(field.value).toBe("");
     expect(state()).toBe("direct-openai-entry");
+    click("I have my Direct API key");
+    expect(input().value).toBe(OPENAI_KEY);
+  });
+  it("Back from a guide-led paste returns to that guide and preserves the draft", () => {
+    const { handle } = mount();
+    handle.open(); click("Direct"); click("OpenAI"); click("Get my Direct API key");
+    click("Paste my Direct API key");
+    const field = input();
+    field.value = OPENAI_KEY;
+    click("Back");
+    expect(state()).toBe("direct-openai-guide");
+    expect(field.value).toBe("");
+    expect(sheet().textContent).not.toContain(OPENAI_KEY);
+    click("Paste my Direct API key");
+    expect(input().value).toBe(OPENAI_KEY);
+  });
+  it("closing on the guide clears its held draft", () => {
+    const { handle } = mount();
+    handle.open(); click("Direct"); click("OpenAI"); click("Get my Direct API key");
+    click("Paste my Direct API key"); input().value = OPENAI_KEY; click("Back");
+    handle.close(); handle.open(); click("Direct"); click("OpenAI"); click("I have my Direct API key");
+    expect(input().value).toBe("");
+  });
+  it("changing provider clears the previous provider's draft", () => {
+    toPaste(); input().value = OPENAI_KEY; click("Back"); click("Back");
+    click("Anthropic"); click("I have my Direct API key"); expect(input().value).toBe("");
+    click("Back"); click("Back"); click("OpenAI"); click("I have my Direct API key");
+    expect(input().value).toBe("");
   });
   it("Escape and destroy clear it", () => {
     const m = toPaste();

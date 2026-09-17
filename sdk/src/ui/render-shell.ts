@@ -65,7 +65,20 @@ export function frame(view: View, cfg: Config, a: Actions, o: FrameOptions): HTM
 }
 
 export function finish(sheet: HTMLElement): void {
-  sheet.appendChild(h("p", { class: "foot" }, common.poweredBy));
+  const top = sheet.querySelector<HTMLElement>(":scope > .top");
+  const actionRow = sheet.querySelector<HTMLElement>(".actions");
+  const guide = sheet.querySelector<HTMLElement>(":scope > .guide");
+  top?.remove();
+  actionRow?.remove();
+  guide?.remove();
+  const body = h("div", { class: "sheet-body" }, ...Array.from(sheet.childNodes));
+  const card = h("div", { class: "sheet-card" }, top, body);
+  if (actionRow) {
+    actionRow.classList.add("sheet-actions");
+    if (guide) actionRow.appendChild(guide);
+    card.appendChild(actionRow);
+  }
+  sheet.replaceChildren(card, h("p", { class: "foot" }, common.poweredBy));
 }
 
 /** The Close button of a rendered sheet. */
@@ -75,7 +88,7 @@ export function closeButton(sheet: HTMLElement): HTMLElement | undefined {
 
 function iconButton(name: string, glyph: string, onClick: () => void): HTMLButtonElement {
   const b = h("button", { type: "button", class: "icon-button", "aria-label": name },
-    h("span", { "aria-hidden": "true" }, glyph));
+    svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${glyph === "‹" ? "m14 6-6 6 6 6" : "m6 6 12 12M6 18 18 6"}"/></svg>`));
   b.addEventListener("click", onClick);
   return b;
 }
@@ -90,6 +103,14 @@ export function paragraphs(lines: string[], className?: string): HTMLElement[] {
 
 export function bullets(lines: string[]): HTMLUListElement {
   return h("ul", { class: "explanation" }, ...lines.map((t) => h("li", {}, t)));
+}
+
+/** The same reassurance, kept beside key entry without bullet-list spacing. */
+export function keyReassurance(lines: string[]): HTMLUListElement {
+  const paths = ["M5 4h14v12H5zM3 20h18", "M5 12h14m-6-6 6 6-6 6", "M8 10V7a4 4 0 0 1 8 0v3M6 10h12v11H6z"];
+  return h("ul", { class: "explanation key-reassurance" }, ...lines.map((line, i) => h("li", {},
+    svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${paths[i] ?? paths[2]}"/></svg>`),
+    h("span", {}, line))));
 }
 
 /** A link that leaves the sheet: label, decorative arrow, new tab. */

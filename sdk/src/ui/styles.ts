@@ -7,19 +7,19 @@
  * Measurements and colors come from the design set: 460px sheet, 20px
  * corners, a bottom sheet with a 12px inset on phones; paper #FAF8F3 /
  * ink #18181A / muted #62625C and dark #232326 / #FAF8F3 / #B8B8B2;
- * the primary action #D6F436 on graphite. System fonts only.
+ * the primary action #D6F436 on graphite. Host Manrope with a system fallback.
  */
 
 const THEME_LIGHT =
   "--bg:#faf8f3;--ink:#18181a;--muted:#62625c;--line:#d1cfc5;--field:#fff;--accent:#d6f436;" +
   "--error:#9c3045;--focus:#789200;--veil:#22222213;--sig:#18181a;--eye:#84a800";
 const THEME_DARK =
-  "--bg:#232326;--ink:#faf8f3;--muted:#b8b8b2;--line:#525256;--field:#18181a;--accent:#d6f436;" +
+  "--bg:#232326;--ink:#faf8f3;--muted:#b8b8b2;--line:#434347;--field:#18181a;--accent:#d6f436;" +
   "--error:#f2a6b6;--focus:#d6f436;--veil:#00000055;--sig:#faf8f3;--eye:#d6f436";
 
 export const CSS = `
 .root{all:initial;display:block;box-sizing:border-box;${THEME_LIGHT};
-font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;color:var(--ink);
+font-family:Manrope,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.5;color:var(--ink);
 -webkit-text-size-adjust:100%;text-size-adjust:100%}
 .root.t-dark{${THEME_DARK}}
 @media(prefers-color-scheme:dark){.root.t-auto{${THEME_DARK}}}
@@ -43,25 +43,25 @@ border-radius:11px;border:1px solid #525255;background:#18181a;color:#faf8f3;fon
 .connected-button svg{width:29px;height:29px}
 .connected-button:hover{box-shadow:0 0 0 1px #a1af65,0 0 16px #d6f4360d}
 
-/* the overlay: fixed, follows the visual viewport when a keyboard is open */
-.overlay{position:fixed;left:0;right:0;top:var(--vv-top,0px);height:var(--vv-height,100vh);
+/* The overlay follows the visual viewport above a phone keyboard. */
+.overlay{position:fixed;left:0;right:0;top:var(--vv-top,0px);height:var(--vv-height,100dvh);
 display:flex;align-items:center;justify-content:center;padding:16px;z-index:2147483000}
 .veil{position:absolute;inset:0;background:var(--veil);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 dialog.overlay::backdrop{background:transparent}
-.sheet{position:relative;width:460px;max-width:100%;background:var(--bg);color:var(--ink);border:1px solid var(--line);
-border-radius:20px;box-shadow:0 24px 80px #0003;max-height:calc(100% - 60px);overflow:auto;overscroll-behavior:contain;
-scrollbar-gutter:stable;padding:24px 28px 20px}
-.status-card{min-height:320px}
+.sheet{position:relative;display:flex;flex-direction:column;width:460px;max-width:100%;max-height:calc(100% - 16px);min-height:0;color:var(--ink)}
+.sheet-card{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;background:var(--bg);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 80px #0003;overflow:hidden}
+.sheet-body{min-height:0;flex:1 1 auto;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent;scroll-padding:18px;padding:25px 28px 24px}
 
-/* the top bar */
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;min-height:44px}
-.brand{display:flex;gap:10px;align-items:center;font-size:13px;font-weight:650}
+/* The same header, content, action area and footer in both modes. */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:40px;padding:24px 24px 0;flex:none}
+.brand{display:flex;gap:11px;align-items:center;font-size:13px;font-weight:700;min-width:0}
 .tile{display:grid;place-items:center;background:#18181a;border-radius:11px;width:40px;height:40px;flex:none}
 .tile svg{width:25px;height:25px}
-.tile.mode{width:44px;height:44px;border-radius:12px;color:#d6f436}
-.chrome{display:flex;gap:8px}
-.icon-button{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;font-size:24px;line-height:1}
-.icon-button:hover{background:#8882}
+.tile.mode{color:#d6f436}
+.chrome{display:flex;flex:none}
+.icon-button{width:40px;height:40px;display:grid;place-items:center;border-radius:9px;color:var(--muted)}
+.icon-button svg{width:19px;height:19px}
+.icon-button:hover{background:#8881;color:var(--ink)}
 .lockup{gap:5px}
 .lockup>span{display:flex;align-items:center}
 .signature{width:23px;height:23px;flex:none}
@@ -69,117 +69,132 @@ scrollbar-gutter:stable;padding:24px 28px 20px}
 .signature .eyeL,.signature .eyeR{fill:var(--eye)}
 .wordmark{width:71px;height:auto;max-height:17px;color:var(--ink)}
 .wordmark path{fill:var(--ink)}
-
-/* words */
-:where(.root) h1{font-size:29px;line-height:1.13;letter-spacing:-.045em;margin:0 0 24px;font-weight:780;overflow-wrap:break-word}
-:where(.root) p{margin:0 0 13px;color:var(--muted);font-size:14px;line-height:1.65}
-:where(.root) p:has(+.actions),:where(.root) p:has(+.provider-link){margin-bottom:0}
+:where(.root) h1{font-size:28px;line-height:1.15;letter-spacing:-.04em;margin:0 0 25px;font-weight:800;overflow-wrap:break-word}
+:where(.root) p{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.65}
+:where(.root) p:last-child{margin-bottom:0}
 :where(.root) ul,:where(.root) ol{margin:0;padding:0}
 .explanation{list-style:disc;padding-left:18px}
-.explanation li{padding-left:3px;margin:0 0 12px;color:var(--muted);font-size:14px;line-height:1.65}
+.explanation li{padding-left:3px;margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.65}
 .explanation li:last-child{margin-bottom:0}
 .explanation li::marker{color:var(--muted);font-size:.7em}
-.overview-steps{padding-left:23px}
-.overview-steps li{padding-left:8px;margin:0 0 18px;line-height:1.65;font-size:14px;color:var(--muted)}
-.overview-steps li:last-child{margin-bottom:0}
-.overview-steps li::marker{font-weight:700;color:var(--ink)}
 .error{color:var(--error)}
+p.error{color:var(--error)}
 .fine{font-size:12px;line-height:1.65;margin:22px 0 0}
-.foot{font-size:11px;text-align:center;margin:20px 0 0;color:var(--muted)}
+.foot{font-size:11px;line-height:1.5;text-align:center;margin:12px 0 0;color:var(--muted);flex:none}
 
-/* the choice and the provider rows */
-.choice{display:flex;width:100%;gap:16px;text-align:left;border-bottom:1px solid var(--line);padding:20px 0;color:var(--ink);border-radius:4px}
+/* Choice rows remain whole, labelled buttons. */
+.choice{display:flex;width:100%;gap:16px;text-align:left;border-bottom:1px solid var(--line);padding:18px 0;color:var(--ink);border-radius:4px}
 .choice:first-of-type{padding-top:0}
-.choice:last-of-type{border-bottom:0;padding-bottom:6px}
+.choice:last-of-type{border-bottom:0;padding-bottom:0}
 .choice-copy{flex:1;min-width:0}
-.choice-name{display:block;font-size:19px;line-height:1.25;letter-spacing:-.025em;font-weight:700}
-.choice-desc{display:block;margin-top:8px;font-size:14px;line-height:1.65;color:var(--muted)}
+.choice-name{display:block;font-size:18px;line-height:1.25;letter-spacing:-.025em;font-weight:800}
+.choice-desc{display:block;margin-top:7px;font-size:12px;line-height:1.65;color:var(--muted)}
 .choice:hover .choice-name{text-decoration:underline;text-underline-offset:4px}
 .arrow{margin-left:auto;font-size:22px;line-height:1;align-self:center}
-.provider{width:100%;min-height:65px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);font-weight:650;padding:0 6px;border-radius:4px}
+.provider{width:100%;min-height:60px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);font-weight:700;padding:0 6px;border-radius:4px}
+.provider:last-child{border:0}
 .provider:hover{background:#8881}
 
-/* actions and links */
-.actions{margin-top:24px;display:grid;gap:12px}
-.primary,.secondary{border-radius:11px;min-height:49px;padding:12px 16px;font-size:14px;font-weight:750;text-align:center;display:block;width:100%}
+/* Actions are outside the scrolling content, in document order. */
+.actions{display:grid;gap:10px}
+.sheet-actions{flex:none;background:var(--bg);padding:18px 28px 24px;border-top:1px solid var(--line)}
+.primary,.secondary{border-radius:10px;min-height:50px;padding:12px 16px;font-size:14px;font-weight:800;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;line-height:1.45}
 .primary{background:var(--accent);border:1px solid transparent;color:#18181a}
 .primary:hover{filter:brightness(.96)}
-.primary:disabled{cursor:default;filter:saturate(.5) brightness(.95)}
-.secondary{color:var(--muted);text-decoration:underline;text-underline-offset:4px}
+.primary:disabled{cursor:default;background:var(--field);border-color:var(--line);color:var(--muted);filter:none}
+.secondary{color:var(--ink);border:1px solid var(--line);min-height:42px;font-size:13px;font-weight:700;padding:10px 14px}
+.secondary:hover{background:#8881}
+.primary svg{width:18px;height:18px}
 .external-link{display:inline-flex;align-items:center;gap:8px;max-width:100%;min-height:44px;vertical-align:middle}
 .external-link .link-label{min-width:0;overflow-wrap:anywhere}
 .external-arrow{width:14px;height:14px;flex:0 0 14px;opacity:.75}
-.overview-steps .external-link{vertical-align:baseline}
-.provider-link{justify-content:center;padding:10px 14px;border-radius:9px;background:#faf8f3;color:#18181a;border:1px solid #d1cfc5;font-size:13px;font-weight:700;text-decoration:none;margin-top:16px}
-.actions>.provider-link{margin:0;width:100%;min-height:49px;display:flex}
-.guide{margin-top:8px;font-size:12px}
-.guide+.foot{margin-top:12px}
+.provider-link{justify-content:center;padding:10px 14px;border-radius:9px;background:var(--field);color:var(--ink);border:1px solid var(--line);font-size:13px;font-weight:700;text-decoration:none}
+.actions>.provider-link{width:100%;min-height:44px;display:flex}
+.guide{font-size:12px;color:var(--muted);min-height:34px}
+.sheet-actions>.guide{display:flex;justify-content:center;margin:0}
+.guide-screen .guide-open{display:inline-flex;justify-content:flex-start;width:fit-content;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--ink);padding:9px 12px;font-size:12px;font-weight:700;text-decoration:none}
+.guide-open:hover{border-color:var(--muted)}
+.overview-steps{list-style:none;counter-reset:step;display:grid;gap:20px}
+.overview-steps li{position:relative;counter-increment:step;padding-left:36px;line-height:1.65;font-size:14px;color:var(--ink);min-height:24px}
+.overview-steps li::before{content:counter(step) / "";position:absolute;left:0;top:0;width:24px;height:24px;border:1px solid var(--line);border-radius:50%;color:var(--muted);text-align:center;font:500 12px/22px ui-monospace,monospace}
+.overview-steps li:has(.guide-open)::before{top:10px}
 
-.guide-screen h1{margin-bottom:20px}
-.guide-screen .guide-open{display:flex;justify-content:center;width:100%;min-height:49px;border-radius:10px;
-background:var(--accent);color:#18181a;padding:12px;font-size:13px;font-weight:750;text-decoration:none}
-.guide-screen .overview-steps li{color:var(--ink)}
-.guide-screen .actions{border-top:1px solid var(--line);padding-top:12px;margin-top:20px}
-.guide-screen .secondary{color:var(--ink);text-decoration:none}
-.guide-screen>.guide{display:flex;justify-content:center;margin:0}
-.vault-details{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:20px}
-.vault-details summary{cursor:pointer;min-height:48px;padding:13px 0;color:var(--muted);font-size:13px;font-weight:650}
-.vault-details[open]{padding-bottom:16px}
+/* Optional detail scrolls with its content; Continue remains outside it. */
+.vault-details{border-top:1px solid var(--line);margin-top:24px}
+.vault-details summary{cursor:pointer;min-height:48px;padding:13px 0;color:var(--muted);font-size:12px;font-weight:700}
 .vault-details .fine{margin-bottom:0}
-
-.sheet.vault-step-sheet{padding:0;border:0;background:transparent;box-shadow:none;scrollbar-gutter:auto}
-.vault-step-card{padding:26px 28px 28px;border:1px solid var(--line);border-radius:20px;background:var(--bg);box-shadow:0 24px 80px #0003}
-.vault-step-card .top{margin-bottom:28px}
-.vault-step-card h1{font-size:28px;margin:0}
-.vault-steps{list-style:none;display:grid;gap:23px;margin:27px 0 0}
-.vault-steps li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:13px;align-items:start}
+.vault-steps{list-style:none;display:grid;gap:20px}
+.vault-steps li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:start}
 .vault-steps .step-number{width:24px;height:24px;border:1px solid var(--line);border-radius:50%;text-align:center;color:var(--muted);font:500 12px/22px ui-monospace,monospace}
-.vault-steps h2{color:var(--ink);font-size:15px;font-weight:800;line-height:1.5;letter-spacing:-.015em;margin:0 0 4px}
-.vault-steps p{font-size:13px;line-height:1.6;margin:0}
-.vault-steps .step-trust{display:flex;align-items:center;gap:9px;margin-top:7px;font-size:12px}
-.step-trust svg{width:15px;height:15px}
-.vault-step-card .vault-details{margin-top:25px}
-.vault-step-card summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;list-style:none;font-weight:700}
-.vault-step-card summary::-webkit-details-marker{display:none}
-.vault-step-card summary svg{width:16px;height:16px}
-.vault-step-card details[open] summary svg{transform:rotate(45deg)}
+.vault-steps h2{color:var(--ink);font-size:14px;font-weight:800;line-height:1.5;letter-spacing:-.015em;margin:0 0 4px}
+.vault-steps p{font-size:12px;line-height:1.6;margin:0}
+.vault-steps .step-trust{display:flex;align-items:center;gap:7px;margin-top:7px;font-size:12px}
+.step-trust svg{width:14px;height:14px}
+.vault-step-sheet summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none}
+.vault-step-sheet summary::-webkit-details-marker{display:none}
+.vault-step-sheet summary svg{width:15px;height:15px}
+.vault-step-sheet details[open] summary svg{transform:rotate(45deg)}
 .vault-detail-body{display:grid;gap:10px}
-.vault-detail-body p{font-size:13px;line-height:1.6;margin:0}
-.vault-step-card .primary{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px}
-.vault-step-card .primary svg{width:18px;height:18px}
-.vault-step-sheet>.foot{margin:14px 0 0;font-size:12px}
-@media(max-width:380px){.vault-step-card{padding:22px 21px 24px}.vault-step-card h1{font-size:26px}.vault-steps li{gap:10px}}
+.vault-detail-body p{font-size:12px;line-height:1.7;margin:0}
 
-/* the connect box */
-.field-label{display:block;font-size:13px;font-weight:700;margin:24px 0 10px}
-.connect-box{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:13px;background:var(--field);padding:7px}
-.connect-box .tile{width:34px;height:36px;border-radius:9px}
-.connect-box .tile svg{width:23px;height:23px}
-.connect-box input{min-width:0;flex:1;width:100%;border:0;background:transparent;color:var(--ink);
-font:16px ui-monospace,SFMono-Regular,Menlo,monospace;min-height:44px;padding:0;margin:0;outline-offset:2px}
-.connect-box input::placeholder{color:var(--muted);font-size:12px;opacity:1}
+/* One input border. Save uses the common action area. */
+.field-label{display:block;font-size:12px;font-weight:700;margin:0 0 10px}
+.connect-box{border:1px solid var(--line);border-radius:10px;background:var(--field);padding:0}
+.connect-box:focus-within{outline:2px solid var(--focus);outline-offset:2px}
+.connect-box input{display:block;width:100%;min-width:0;border:0;border-radius:10px;background:transparent;color:var(--ink);font:16px ui-monospace,SFMono-Regular,Menlo,monospace;min-height:54px;padding:14px;margin:0;outline:none}
+.connect-box input:focus-visible{outline:none}
+.connect-box input::placeholder{font:500 13px Manrope,system-ui,sans-serif;color:var(--muted);opacity:1}
+.connect-box:has(input[aria-invalid="true"]){border-color:var(--error)}
 .connect-box input[aria-invalid="true"]{caret-color:var(--error)}
-.save{background:#18181a;color:#faf8f3;border:1px solid #525255;border-radius:9px;min-height:44px;padding:0 12px;font-size:13px;font-weight:700}
+p.field-error{margin:12px 0 0;font-size:12px}
+.key-reassurance{list-style:none;display:grid;gap:9px;padding:0;margin:22px 0 0}
+.key-reassurance li{display:flex;align-items:center;gap:10px;padding:0;margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+.key-reassurance svg{width:15px;height:15px;opacity:.8}
 
-/* status screens */
-.message{text-align:center;display:flex;flex-direction:column;justify-content:flex-start;padding-top:8px}
-.message .tile{margin:0 auto 16px;width:58px;height:58px;border-radius:16px}
-.message .tile svg{width:39px;height:39px}
-.message h1{margin:0 0 12px}
+/* Status wording and completion behavior stay unchanged. */
+.message{text-align:center;display:flex;flex-direction:column;justify-content:center;padding:8px 0 14px;min-height:206px}
+.message .tile{margin:0 auto 20px;width:52px;height:52px;border-radius:14px}
+.message .tile svg{width:35px;height:35px}
+.message h1{margin:0 0 14px}
 .message p{margin:0}
 .message p+p{margin-top:6px}
-.message .actions{margin-top:24px}
 .busy{display:block;width:28px;height:28px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:50%;margin:0 auto 16px;animation:spin .9s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .eyeL{transform-box:fill-box;transform-origin:center}
 .wink .eyeL{animation:wink .5s ease .1s}
 @keyframes wink{0%,100%{transform:scaleY(1)}45%,65%{transform:scaleY(.14)}}
-
 @media(max-width:540px){
 .overlay{align-items:flex-end;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
-.sheet{width:100%;padding:19px 19px 20px;max-height:calc(100% - 52px)}
-.top{margin-bottom:24px}
-h1{font-size:28px}
+.sheet{width:100%;max-height:100%}
+.top{padding:20px 18px 0}
+.sheet-body{padding:23px 22px 22px}
+.sheet-actions{padding:16px 22px 20px}
+:where(.root) h1{font-size:26px}
+.brand{font-size:12px;gap:10px}
+.tile.mode{width:38px;height:38px}
+.icon-button{width:36px}
+.foot{margin-top:10px}
+}
+@media(max-width:350px){
+.top{padding:16px 14px 0;gap:6px}
+.sheet-body{padding:20px 18px}
+.sheet-actions{padding:14px 18px 18px}
+.brand{font-size:11px;gap:8px}
+.tile.mode{width:34px;height:34px}
+.icon-button{width:32px}
+:where(.root) h1{font-size:25px}
+.overview-steps li{padding-left:33px;font-size:13px}
+.guide-screen .guide-open{font-size:11px;padding:9px}
+.connect-box input::placeholder{font-size:12px}
+}
+@media(max-height:480px){
+.sheet{max-height:100%}
+.top{padding-top:12px}
+.sheet-body{padding-top:16px;padding-bottom:16px}
+.sheet-actions{padding-top:12px;padding-bottom:12px;gap:4px}
+.primary{min-height:46px}
+.foot{margin-top:7px}
+:where(.root) h1{margin-bottom:18px}
 }
 @media(prefers-reduced-motion:reduce){
 .busy,.wink .eyeL{animation:none}

@@ -37,6 +37,8 @@ export class Widget {
   private rendered: Rendered | null = null;
   private bound: Bound | null = null;
   private destroyed = false;
+  private draft: { provider: View["provider"]; value: string } | null = null;
+  private pasteParent: View | null = null;
 
   constructor(private readonly target: HTMLElement, private readonly opts: ConnectButtonOptions) {
     if (!target || typeof target !== "object" || !("attachShadow" in target)) {
@@ -71,6 +73,7 @@ export class Widget {
   close(): void {
     if (!this.overlay.isOpen) return;
     this.clearField();
+    this.clearDraft();
     this.overlay.close();
     this.view = null;
     this.rendered = null;
@@ -80,6 +83,7 @@ export class Widget {
   destroy(): void {
     if (this.destroyed) return;
     this.clearField();
+    this.clearDraft();
     this.overlay.close();
     this.destroyed = true;
     this.root.replaceChildren();
@@ -90,7 +94,8 @@ export class Widget {
   private readonly actions: Actions = {
     go: (view) => this.show(view),
     back: () => {
-      const parent = this.view && parentView(this.cfg, this.view);
+      const parent = this.rendered?.input && this.pasteParent
+        ? this.pasteParent : this.view && parentView(this.cfg, this.view);
       if (parent) this.show(parent);
     },
     close: () => this.close(),
@@ -102,16 +107,42 @@ export class Widget {
     done: () => this.close(),
   };
 
-  /** Leaving a screen with the paste field drops whatever was in it. */
+  /** Detached fields never keep a key. A guide round trip may hold one draft. */
   private clearField(): void {
     if (this.rendered?.input) this.rendered.input.value = "";
   }
 
+  private clearDraft(): void {
+    this.draft = null;
+    this.pasteParent = null;
+  }
+
+  private isDirectWork(view: View | null): boolean {
+    if (!view?.provider) return false;
+    return ["entry", "guide", "paste"].some((step) => view.id === `direct-${view.provider}-${step}`)
+      || view.id === "direct-error-empty" || view.id === "direct-error-format";
+  }
+
   private show(view: View): void {
     if (this.destroyed) return;
+    const previous = this.view;
+    const sameFlow = previous?.provider === view.provider
+      && this.isDirectWork(previous) && this.isDirectWork(view);
+    if (!sameFlow) this.clearDraft();
+    else if (this.rendered?.input) this.draft = { provider: view.provider, value: this.rendered.input.value };
+    if (view.provider && view.id === `direct-${view.provider}-paste`) {
+      this.pasteParent = previous?.id === `direct-${view.provider}-guide`
+        ? previous : directView("entry", view.provider);
+    }
     this.clearField();
     this.view = view;
     this.rendered = this.render(view);
+    if (this.rendered.input) {
+      const draft = this.draft;
+      if (draft && draft.provider === view.provider) this.rendered.input.value = draft.value;
+      this.draft = null;
+      this.rendered.focus = this.rendered.input;
+    }
     this.overlay.show(this.rendered);
   }
 

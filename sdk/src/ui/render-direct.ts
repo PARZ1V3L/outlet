@@ -1,10 +1,10 @@
 /** The choice, the provider list and every Direct screen. */
-import { DIRECT_MARK, SOCKET, VAULT_MARK } from "./assets.js";
+import { DIRECT_MARK, VAULT_MARK } from "./assets.js";
 import { h, svg } from "./dom.js";
 import { type Config, type View, directView, providerListView } from "./routes.js";
 import {
-  type Actions, type Rendered, IDS, actions, bullets, closeButton, externalLink, fill, finish,
-  frame, heading, message, paragraphs, primary, secondary,
+  type Actions, type Rendered, IDS, actions, closeButton, externalLink, fill, finish,
+  frame, heading, keyReassurance, message, paragraphs, primary, secondary,
 } from "./render-shell.js";
 import { choose, direct, directErrors, providers } from "./strings.js";
 import type { UiProvider } from "./types.js";
@@ -79,14 +79,13 @@ export function renderGuide(view: View, cfg: Config, a: Actions): Rendered {
     sheet.append(...paragraphs(s.lines ?? []));
     sheet.appendChild(externalLink(s.link ?? "", s.linkUrl, "guide-open"));
   }
-  sheet.appendChild(actions(secondary(s.paste, () => a.go(directView("paste", p)))));
+  sheet.appendChild(actions(primary(s.paste, () => a.go(directView("paste", p)))));
   sheet.appendChild(externalLink(s.guide, s.guideUrl, "guide"));
   finish(sheet);
   return { sheet, heading: head };
 }
 
-/** The paste screen. The two field errors are this screen with the heading
- *  swapped, the bullets gone and the error line shown: see applyFieldError. */
+/** The paste screen. Field errors keep this field and its reassurance in place. */
 export function renderPaste(view: View, cfg: Config, a: Actions): Rendered {
   const p = view.provider as UiProvider;
   const s = direct[`direct-${p}-paste`];
@@ -97,17 +96,18 @@ export function renderPaste(view: View, cfg: Config, a: Actions): Rendered {
     autocorrect: "off", spellcheck: "false", placeholder: s.placeholder,
     "data-1p-ignore": true, "data-lpignore": "true", "data-bwignore": true,
   });
-  const save = h("button", { type: "button", class: "save" }, s.save);
+  const save = h("button", { type: "button", class: "primary save" }, s.save);
   save.addEventListener("click", () => a.save(input));
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); a.save(input); }
   });
   sheet.append(
     head,
-    bullets(s.lines),
-    h("p", { class: "error", id: IDS.error, hidden: true }),
     h("label", { class: "field-label", for: IDS.key }, s.label),
-    h("div", { class: "connect-box" }, h("span", { class: "tile" }, svg(SOCKET)), input, save),
+    h("div", { class: "connect-box" }, input),
+    h("p", { class: "error field-error", id: IDS.error, hidden: true }),
+    keyReassurance(s.lines),
+    actions(save),
   );
   finish(sheet);
   return { sheet, heading: head, input };
@@ -121,7 +121,6 @@ export function applyFieldError(r: Rendered, kind: "empty" | "format", provider:
   const s = directErrors[id];
   r.sheet.setAttribute("data-state", id);
   r.heading.textContent = fill(s.title, provider);
-  r.sheet.querySelector(".explanation")?.setAttribute("hidden", "");
   const slot = r.sheet.querySelector<HTMLElement>("#" + IDS.error);
   const input = r.input as HTMLInputElement;
   input.setAttribute("aria-invalid", "true");

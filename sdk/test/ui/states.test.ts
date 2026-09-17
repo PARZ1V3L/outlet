@@ -32,6 +32,12 @@ const note = () => {
     seen.add(s);
     const root = document.querySelector("[data-outlet-overlay]")!.shadowRoot!;
     expect(root.querySelectorAll("[style]"), `inline style on ${s}`).toHaveLength(0);
+    const body = root.querySelector(".sheet-body")!;
+    expect(body.querySelector("h1"), `heading in the content region on ${s}`).not.toBeNull();
+    expect(body.querySelector(".actions"), `actions must not scroll away on ${s}`).toBeNull();
+    for (const action of root.querySelectorAll(".actions")) {
+      expect(action.parentElement?.className).toBe("sheet-card");
+    }
   }
   return s;
 };

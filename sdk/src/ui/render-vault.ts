@@ -34,7 +34,6 @@ export function renderVaultExplain(view: View, cfg: Config, a: Actions): Rendere
   sheet.appendChild(actions(next));
   if (s.steps) {
     sheet.classList.add("vault-step-sheet");
-    sheet.appendChild(h("div", { class: "vault-step-card" }, ...Array.from(sheet.childNodes)));
   }
   finish(sheet);
   return { sheet, heading: head };

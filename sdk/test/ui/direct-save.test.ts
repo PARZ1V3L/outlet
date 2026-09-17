@@ -79,13 +79,14 @@ describe("Save", () => {
     expect(input()).toBe(field);
     expect(field.getAttribute("aria-invalid")).toBe("true");
     expect(activeInSheet()).toBe(field);
-    expect(sheet().querySelector(".explanation")?.hasAttribute("hidden")).toBe(true);
+    expect(sheet().querySelector(".key-reassurance")?.hasAttribute("hidden")).toBe(false);
     expect(m.onSession).not.toHaveBeenCalled();
   });
 
   it("format: the error text is associated with the field and never echoes the key", async () => {
     const m = toPaste();
     const field = input();
+    sheet().querySelector<HTMLButtonElement>("button.save")!.focus();
     paste("not-a-key-zzz");
     await flush();
     expect(state()).toBe("direct-error-format");
