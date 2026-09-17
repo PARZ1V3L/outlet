@@ -24,21 +24,25 @@ directly with the official SDK. Outlet is **never in the data path**.
 > The same session in both modes. Protocol docs at [useoutlet.dev](https://useoutlet.dev).
 > Feedback welcome.
 
-## Building with an AI? Paste this.
+## Have a Vault invite? Paste this into your AI.
 
 Your AI adds the Connect your AI button for you. The same button can offer
-Direct, Vault or both. Your invite brings the app id.
+Direct, Vault or both. Your Vault invite brings the app ID.
 
 ```text
 Add Outlet to this app so users can connect their own AI account.
 Read https://useoutlet.dev/llms-full.txt first.
 Install: npm install @useoutlet/sdk
-App id: <from your invite>
+App ID: <from your Vault invite>
 Return address: <the https or private-scheme return address>
 Local testing: http://localhost/outlet/return, any port
-Flow: public client. Outlet.connectRedirect on the button, Outlet.handleRedirect on the return page. No app secret in the app.
+Button: import { mountConnectButton } from "@useoutlet/sdk/ui".
+Mount on an empty div with mode: "both", appId and redirectUri.
+Vault return: pass Outlet.handleRedirect() as session only when the return address has code and state.
+Receive the Direct or Vault session through onSession.
+No app secret in the app.
 Provider: choose openai or anthropic. Send exactly one provider per connection request.
-Button: "Connect your AI", where a user would add an AI today.
+Place the Connect your AI button where users connect their AI account.
 After connect: call the provider with its official SDK using session.keys.<provider>.
 ```
 
