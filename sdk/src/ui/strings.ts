@@ -34,18 +34,18 @@ export const button = {
 
 export const choose = {
   title: "Connect your AI",
-  direct: { name: "Direct", description: "Use your API key to connect." },
+  direct: { name: "Direct", description: "Use your Direct API key to connect." },
   vault: {
     name: "Vault",
     description:
-      "Connect your account with an admin key. Track spending and revoke this app’s access any time.",
+      "Connect your account with a Vault admin key. Track spending and revoke this app’s access any time.",
   },
 };
 
 const providerList = {
   header: "Direct",
   title: "Choose your provider",
-  lead: "Use your own API key in Direct.",
+  lead: "Use your own Direct API key.",
 };
 
 const pasteLines = ["Checked on this device.", "Passed to this app.", "Never sent to Outlet."];
@@ -128,7 +128,7 @@ export const direct = {
   "direct-google-guide": {
     header: "Direct · Google",
     title: "Get your Direct API key",
-    lines: ["Open Google AI Studio for your Direct API key.", "Return here when you have copied it."],
+    lines: ["Open Google AI Studio and create an API key.", "Return here when you have copied it."],
     link: "Open the Google website",
     linkUrl: "https://aistudio.google.com/api-keys",
     paste: "Paste my Direct API key",
@@ -199,7 +199,7 @@ export const directErrors = {
 };
 
 const vaultFine = "Vault caps use provider spend reports. Reporting delays can allow spending above the cap.";
-const vaultIntro = ["Use your Vault admin key on useoutlet.dev.", "Your Vault admin key is never given to apps."];
+const vaultIntro = ["Add your Vault admin key on useoutlet.dev.", "Outlet uses it to manage app access in your account.", "Your Vault admin key is never given to apps."];
 const vaultAccess = [
   "This app gets its own capped Vault App key in your account.",
   "Revoke Vault access any time.",
@@ -231,7 +231,7 @@ const explainAnthropic: VaultExplainStrings = {
   steps: [
     { title: "Connect your account", body: "Add your Vault admin key on useoutlet.dev.", note: "Never given to apps." },
     { title: "Approve this app", body: "Review its Vault access and cap." },
-    { title: "Create its Vault App key", body: "Make it on Anthropic’s website, then paste it into Outlet." },
+    { title: "Create its Vault App key", body: "Create an API key in the workspace named on Outlet. Paste it into Outlet." },
   ],
   details: "Vault access and caps",
   lines: vaultAccess,

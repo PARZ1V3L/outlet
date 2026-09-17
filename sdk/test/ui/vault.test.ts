@@ -32,7 +32,7 @@ describe("explain", () => {
     click("Vault");
     expect(state()).toBe("vault-explain");
     expect(heading()).toBe("Connect your account");
-    expect(sheet().textContent).toContain("Use your Vault admin key on useoutlet.dev.");
+    expect(sheet().textContent).toContain("Add your Vault admin key on useoutlet.dev.");
     expect(sheet().textContent).toContain("Vault caps use provider spend reports.");
     expect(sheet().textContent).not.toContain("by hand");
     expect(sheet().querySelector('[aria-label="Back"]')).not.toBeNull();
@@ -47,7 +47,7 @@ describe("explain", () => {
       "Connect your account", "Approve this app", "Create its Vault App key",
     ]);
     expect(sheet().querySelector(".vault-steps li:first-child .step-trust")?.textContent).toBe("Never given to apps.");
-    expect(sheet().textContent).toContain("Make it on Anthropic’s website, then paste it into Outlet.");
+    expect(sheet().textContent).toContain("Create an API key in the workspace named on Outlet. Paste it into Outlet.");
     expect(sheet().querySelectorAll("button.provider")).toHaveLength(0);
   });
   it("vault only: no Back, the -only screens", () => {

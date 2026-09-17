@@ -40,7 +40,7 @@ describe("the dialog", () => {
     const name = sheet().querySelector("#" + direct.getAttribute("aria-labelledby"));
     const desc = sheet().querySelector("#" + direct.getAttribute("aria-describedby"));
     expect(name?.textContent).toBe("Direct");
-    expect(desc?.textContent).toBe("Use your API key to connect.");
+    expect(desc?.textContent).toBe("Use your Direct API key to connect.");
     expect(sheet().querySelector(".arrow")?.getAttribute("aria-hidden")).toBe("true");
     click("Direct");
     expect(sheet().querySelector('[aria-label="Back"]')?.tagName).toBe("BUTTON");
