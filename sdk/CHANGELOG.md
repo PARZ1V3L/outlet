@@ -1,5 +1,7 @@
 # Changelog (@useoutlet/sdk)
 
+0.5.2: Direct API key and Vault admin key wording in the Connect your AI button, and the README and spec lines that go with it.
+
 0.5.1: provider key names in Direct guides, shared modal layout with visible actions, and draft-preserving Direct back navigation.
 
 ## 0.5.0
