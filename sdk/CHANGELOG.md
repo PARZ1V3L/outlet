@@ -1,5 +1,7 @@
 # Changelog (@useoutlet/sdk)
 
+0.5.1: the Direct guide's second step uses the provider's own name for the key.
+
 ## 0.5.0
 
 ### Added
