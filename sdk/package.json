@@ -26,6 +26,7 @@
       "types": "./dist/ui/index.d.ts",
       "default": "./dist/ui/index.js"
     },
+    "./providers.json": "./dist/providers.json",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
@@ -34,7 +35,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/write-providers-json.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepublishOnly": "npm run typecheck && npm run test && npm run build"
