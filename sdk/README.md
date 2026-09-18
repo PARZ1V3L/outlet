@@ -233,10 +233,12 @@ cancellation of pending provider work where available. Cancellation may fail
 to stop work already processing, so a job can still finish and be charged
 after Vault access is stopped.
 
-Direct API keys stay in the browser. Do not move a Direct API key into your
-server or worker to keep a job running. A provider may finish work already
-submitted through Direct, but your app needs Vault for server-managed access
-after the browser closes.
+Direct API keys are never sent to Outlet. Your app holds the key, in the
+browser or on your own server when the provider accepts calls only from a
+server, and tells the user which. Work that runs after the browser closes
+belongs in the Vault. A provider may finish work already submitted through
+Direct, but your app needs Vault for server-managed access after the browser
+closes.
 
 ## Several providers
 
