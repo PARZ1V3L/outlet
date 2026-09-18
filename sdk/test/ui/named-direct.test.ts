@@ -25,7 +25,6 @@ const OPEN: Record<string, string> = {
   fal: "Open fal’s keys page",
   replicate: "Open Replicate’s API tokens page",
 };
-const COPY: Record<string, string> = { google: "Copy your Direct API key and return here." };
 const FULL_GUIDE: Record<string, string> = {
   openai: "https://useoutlet.dev/docs/users/openai-api-key.html",
   anthropic: "https://useoutlet.dev/docs/users/anthropic-api-key.html",
@@ -48,10 +47,11 @@ describe("the named Direct screen", () => {
     expect(state()).toBe(`direct-${id}-guide`);
     expect(header()).toBe(`Direct · ${name}`);
     expect(heading()).toBe("Get your Direct API key");
+    // the third step is the same on every named screen
     expect(steps()).toEqual([
       OPEN[id] ?? `Open the ${name} website`,
       p.createAction,
-      COPY[id] ?? "Copy it and return here.",
+      "Copy it and return here.",
     ]);
     const link = sheet().querySelector("ol a.guide-open") as HTMLAnchorElement;
     expect(link.href).toBe(new URL(p.keysUrl).href);

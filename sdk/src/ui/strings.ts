@@ -78,8 +78,6 @@ export interface ProviderWords {
   note?: string;
   /** The label of the guide's linked first step. */
   open?: string;
-  /** The guide's third step. */
-  copy?: string;
   /** A line under the guide's steps. */
   scope?: string;
   /** The full guide, only where the page exists. */
@@ -97,7 +95,6 @@ export const providerWords: Record<string, ProviderWords> = {
   },
   google: {
     open: "Open Google AI Studio",
-    copy: "Copy your Direct API key and return here.",
     guideUrl: "https://ai.google.dev/gemini-api/docs/api-key",
   },
   higgsfield: { note: "Use your Higgsfield key ID and secret together as your Direct API key." },

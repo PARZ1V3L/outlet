@@ -24,7 +24,7 @@ export function directWords(p: ScreenProvider): DirectWords {
       guide: {
         header,
         title: t.guide.title,
-        steps: [own.open ?? say(t.guide.open), p.entry.createAction, own.copy ?? t.guide.copy],
+        steps: [own.open ?? say(t.guide.open), p.entry.createAction, t.guide.copy],
         linkUrl: p.entry.keysUrl,
         scope: own.scope,
         paste: t.guide.paste,

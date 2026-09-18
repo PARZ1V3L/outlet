@@ -66,7 +66,7 @@ describe("the Direct walk", () => {
     click("Get my Direct API key");
     expect(state()).toBe("direct-google-guide");
     const steps = Array.from(sheet().querySelectorAll("ol li")).map((li) => li.textContent?.trim());
-    expect(steps).toEqual(["Open Google AI Studio", "Create an API key in Google AI Studio.", "Copy your Direct API key and return here."]);
+    expect(steps).toEqual(["Open Google AI Studio", "Create an API key in Google AI Studio.", "Copy it and return here."]);
     const pill = sheet().querySelector("ol a.guide-open") as HTMLAnchorElement;
     expect(pill.href).toBe("https://aistudio.google.com/api-keys");
     expect((sheet().querySelector("a.guide") as HTMLAnchorElement).href).toBe("https://ai.google.dev/gemini-api/docs/api-key");
