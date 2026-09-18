@@ -98,6 +98,8 @@ not involved. Zero added latency, zero data exposure.
   - providers with soft budgets (OpenAI project budgets): Outlet revokes or
     disables the key via admin API (**auto-revoke**), then re-enables on user
     action or new billing period.
+- A usage reading in a currency other than USD stops the grant
+  (`reason: "currency"`, §7).
 
 ### 3.5 Revoke (user → Outlet → provider)
 
@@ -143,6 +145,10 @@ implement was removed from the contract (2026-06-12).
 | **1** | OpenAI | Admin API projects + service accounts — **zero manual steps, raw key returned** | **Outlet meter + revoke** (budgets verified advisory) + programmatic rate limits + advisory budget | Probed 🟢 — see §5.2 |
 | **2** | Anthropic | Admin API workspaces (programmatic) + **guided Console step for key creation** | Outlet-enforced: cost API polling + key deactivation (Console caps are manual) | Probed 🟡 — see §5.1 |
 | 3 | Google | Cloud projects + Gemini keys | Quotas + budget alerts → auto-revoke | Fast follow; needs its own probe |
+| 4 | fal (a model host: it serves other makers' image, video and audio models) | Platform API keys: `POST /keys` with an ADMIN key, zero manual steps, raw key returned once | Outlet meter + key deletion only. fal has no per-key budget and no per-key rate limit, so the provision-time rate limit (capToRpm, 5.2) does not apply. | Built from fal's reference 2026-09-17, not probed |
+
+A provider's kind is `maker` (it serves its own models) or `host` (it serves
+other makers' models).
 
 Adapter facts MUST be re-verified against current provider docs and ToS
 before each release. Where a provider later ships native user-grant OAuth
@@ -423,6 +429,7 @@ interface GrantInfo {
   providers: Provider[];
   capUsd: number;
   spendUsd: number;
+  reason?: "spend" | "unreadable" | "currency"; // only when status is "capped"
 }
 ```
 
@@ -433,6 +440,9 @@ scoped key on every check — the read and the delivery are deliberately
 separate endpoints.) `spendUsd` is the vault's last persisted meter
 reading, visible to the grant holder: month-to-date, up to one metering
 interval (~5 min) stale, and `0` for a grant the meter has not yet read.
+`reason` says why a capped grant stopped: `"spend"` (its monthly cap),
+`"unreadable"` (the meter could not read the provider's usage for an hour)
+or `"currency"` (§3.4). A grant in any other status carries no `reason`.
 
 Wire protocol: plain HTTPS + JSON; OAuth 2.1-style grant screen; PKCE for
 public clients (§7.1). Full endpoint schema in `openapi.yaml` (TODO).

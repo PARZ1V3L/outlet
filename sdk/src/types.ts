@@ -82,6 +82,13 @@ export interface GrantInfo {
   capUsd: number;
   /** Spend so far this billing period, USD-normalized. */
   spendUsd: number;
+  /**
+   * Why a capped grant stopped. Present only when `status` is "capped":
+   * "spend" (its monthly cap), "unreadable" (the meter could not read the
+   * provider's usage for an hour) or "currency" (the provider reports the
+   * account's usage in a currency other than USD).
+   */
+  reason?: "spend" | "unreadable" | "currency";
 }
 
 export class OutletError extends Error {
