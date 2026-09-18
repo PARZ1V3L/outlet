@@ -1,32 +1,17 @@
 /** Outlet SDK — core types (spec §7) */
+import type { ProviderId } from "./providers.js";
 
 /**
- * Provider key namespace for direct mode. OpenAI, Anthropic, and Google get
- * strict key-format validation; any other value is treated as an
- * OpenAI-compatible provider — your app calls it with the OpenAI SDK and that
- * provider's `baseURL`. Any string is accepted, so the SDK works with the
- * whole OpenAI-compatible ecosystem (Groq, Together, OpenRouter, DeepSeek,
- * xAI, Mistral, Cerebras, Qwen, and more). The named ones are just for editor
- * autocomplete.
+ * Provider key namespace. The named ids are the provider registry's
+ * (providers.ts): each has a named Direct screen in the Connect your AI
+ * button. Any other string is accepted too. OpenAI, Anthropic and Google
+ * get strict key-format validation. Every other provider's key is an
+ * opaque value: your app calls that provider with its own SDK, or with the
+ * OpenAI SDK and the provider's `baseURL` where the registry marks it
+ * `openaiCompatible`.
  */
 export type Provider =
-  | "openai"
-  | "anthropic"
-  | "google"
-  | "groq"
-  | "openrouter"
-  | "xai"
-  | "deepseek"
-  | "mistral"
-  | "together"
-  | "fireworks"
-  | "cerebras"
-  | "qwen"
-  | "moonshot"
-  | "minimax"
-  | "zai"
-  | "nous"
-  | "meta"
+  | ProviderId
   // eslint-disable-next-line @typescript-eslint/ban-types
   | (string & {});
 

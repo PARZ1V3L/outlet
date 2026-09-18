@@ -27,6 +27,14 @@ import { connectRedirect, handleRedirect } from "./pkce.js";
 
 export * from "./types.js";
 export { direct, type DirectOptions } from "./direct.js";
+export { getProvider, providerIds, providers } from "./providers.js";
+export type {
+  KeyShape,
+  ProviderCheck,
+  ProviderEntry,
+  ProviderId,
+  ProviderKind,
+} from "./providers.js";
 export {
   connectRedirect,
   createGrant,

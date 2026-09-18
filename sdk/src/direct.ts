@@ -11,10 +11,14 @@
  *   });
  *   const ai = new OpenAI({ apiKey: session.keys.openai });
  *
- * Works with any OpenAI-compatible provider: pass its key under that provider
- * (e.g. { groq: key }) and point the OpenAI SDK at the provider's baseURL.
+ * Works with any provider: pass its key under that provider's id. For an
+ * OpenAI-compatible one (e.g. { groq: key }), point the OpenAI SDK at the
+ * provider's baseURL. The provider registry (providers.ts) names the
+ * nineteen with a named Direct screen. Its key shapes and format hints are
+ * for the person pasting a key. direct() refuses no key over them.
  */
 
+import { getProvider } from "./providers.js";
 import { OutletError, OutletSession, Provider } from "./types.js";
 
 export interface DirectOptions {
@@ -26,30 +30,10 @@ export interface DirectOptions {
   keys: Partial<Record<Provider, string>>;
 }
 
-/** Display names for nicer error messages. Any provider not listed falls back
- *  to the raw key the developer passed. */
-const DISPLAY_NAMES: Record<string, string> = {
-  openai: "OpenAI",
-  anthropic: "Anthropic",
-  google: "Google",
-  groq: "Groq",
-  openrouter: "OpenRouter",
-  xai: "xAI",
-  deepseek: "DeepSeek",
-  mistral: "Mistral",
-  together: "Together",
-  fireworks: "Fireworks",
-  cerebras: "Cerebras",
-  qwen: "Qwen",
-  moonshot: "Moonshot",
-  minimax: "MiniMax",
-  zai: "Z.AI",
-  nous: "Nous",
-  meta: "Meta",
-};
-
+/** The registry's display name for nicer error messages. A provider
+ *  outside the registry falls back to the raw id the developer passed. */
 function displayName(provider: Provider): string {
-  return DISPLAY_NAMES[provider] ?? provider;
+  return getProvider(provider)?.displayName ?? provider;
 }
 
 /** First-class providers with well-defined key shapes get strict validation.
@@ -138,10 +122,10 @@ function validateKey(provider: Provider, raw: string): string {
     return key;
   }
 
-  // Any other provider is treated as OpenAI-compatible: your app calls it with
-  // the OpenAI SDK + that provider's baseURL. Their keys are opaque tokens,
-  // JWTs, or generic "sk-" with no shared, checkable shape — so we accept any
-  // non-empty, non-admin key rather than reject valid keys we can't model.
+  // Any other provider's key is an opaque value: a token, a JWT, a generic
+  // "sk-", or two parts around a colon or a dot (fal, Higgsfield, Z.ai). We
+  // accept any non-empty, non-admin key whole rather than reject a valid key
+  // we can't model. The registry's key shapes are never enforced here.
   return key;
 }
 
