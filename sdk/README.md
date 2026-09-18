@@ -236,9 +236,7 @@ after Vault access is stopped.
 Direct API keys are never sent to Outlet. Your app holds the key, in the
 browser or on your own server when the provider accepts calls only from a
 server, and tells the user which. Work that runs after the browser closes
-belongs in the Vault. A provider may finish work already submitted through
-Direct, but your app needs Vault for server-managed access after the browser
-closes.
+belongs in the Vault.
 
 ## Several providers
 
@@ -257,7 +255,7 @@ refreshing and using it. Revoking the fal Vault connection does not revoke
 the Anthropic Vault connection.
 
 You can also offer a Direct connection, such as Replicate, alongside Vault.
-Each Direct API key stays in the browser. Direct does not get Vault caps or
+Outlet never receives a Direct API key. Direct does not get Vault caps or
 Outlet’s Vault revoke control. The user removes Direct access on the
 provider’s website.
 
