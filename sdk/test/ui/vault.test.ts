@@ -245,7 +245,7 @@ describe("the return page", () => {
   });
   it("a held Direct session binds Direct", () => {
     const m = mount({ session: { ...vaultSession, mode: "direct", keys: { google: "AIzaX" } } });
-    expect(trigger(m.target).getAttribute("aria-label")).toBe("Connected to Google in Direct");
+    expect(trigger(m.target).getAttribute("aria-label")).toBe("Connected to Gemini in Direct");
     m.handle.open();
     expect(state()).toBe("direct-google-connected");
   });

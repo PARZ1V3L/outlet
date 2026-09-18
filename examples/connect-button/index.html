@@ -39,7 +39,7 @@
   <section>
     <div>
       <h2>direct</h2>
-      <p>Providers: OpenAI, Anthropic, Google. Paste a real key: the format is checked here and handed to <code>onSession</code>, masked below.</p>
+      <p>Providers: OpenAI, Anthropic, Gemini, Groq, fal and Replicate from the registry, and Runway on the generic Direct screen. Paste a real key: it is checked here and handed to <code>onSession</code>, masked below.</p>
       <div id="direct"></div>
     </div>
     <pre id="direct-out" aria-live="polite"></pre>
@@ -98,7 +98,9 @@
       onError: (e) => console.warn("[outlet] onError", e),
     };
     handles.direct = mountConnectButton(document.getElementById("direct"), {
-      ...common, mode: "direct", providers: ["openai", "anthropic", "google"],
+      ...common, mode: "direct",
+      providers: ["openai", "anthropic", "google", "groq", "fal", "replicate",
+        { id: "runway", name: "Runway", keysUrl: "https://dev.runwayml.com/" }],
       onSession: (s) => { out("direct").textContent = masked(s); },
     });
     if (!mapped) {

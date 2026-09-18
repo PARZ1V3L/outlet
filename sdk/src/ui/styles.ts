@@ -118,11 +118,14 @@ p.error{color:var(--error)}
 .overview-steps li{position:relative;counter-increment:step;padding-left:36px;line-height:1.65;font-size:14px;color:var(--ink);min-height:24px}
 .overview-steps li::before{content:counter(step) / "";position:absolute;left:0;top:0;width:24px;height:24px;border:1px solid var(--line);border-radius:50%;color:var(--muted);text-align:center;font:500 12px/22px ui-monospace,monospace}
 .overview-steps li:has(.guide-open)::before{top:10px}
+.link-host{display:block;margin-top:5px;color:var(--muted);font:500 11px/1.5 ui-monospace,monospace;overflow-wrap:anywhere}
+p.guide-note{margin:22px 0 0;font-size:12px}
 
 /* Optional detail scrolls with its content; Continue remains outside it. */
 .vault-details{border-top:1px solid var(--line);margin-top:24px}
 .vault-details summary{cursor:pointer;min-height:48px;padding:13px 0;color:var(--muted);font-size:12px;font-weight:700}
 .vault-details .fine{margin-bottom:0}
+p.fine-in-view{margin:6px 0 0}
 .vault-steps{list-style:none;display:grid;gap:20px}
 .vault-steps li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:start}
 .vault-steps .step-number{width:24px;height:24px;border:1px solid var(--line);border-radius:50%;text-align:center;color:var(--muted);font:500 12px/22px ui-monospace,monospace}
@@ -146,6 +149,7 @@ p.error{color:var(--error)}
 .connect-box input::placeholder{font:500 13px Manrope,system-ui,sans-serif;color:var(--muted);opacity:1}
 .connect-box:has(input[aria-invalid="true"]){border-color:var(--error)}
 .connect-box input[aria-invalid="true"]{caret-color:var(--error)}
+p.field-hint{margin:10px 0 0;font-size:12px}
 p.field-error{margin:12px 0 0;font-size:12px}
 .key-reassurance{list-style:none;display:grid;gap:9px;padding:0;margin:22px 0 0}
 .key-reassurance li{display:flex;align-items:center;gap:10px;padding:0;margin:0;color:var(--muted);font-size:12px;line-height:1.5}

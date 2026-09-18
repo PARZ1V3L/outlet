@@ -36,6 +36,16 @@
  * (session: storedSession). handle.open(), handle.close() and
  * handle.destroy() do what they say; destroy() leaves the target empty.
  *
+ * Providers: every id in the provider registry (../providers.ts) has a
+ * named Direct screen with that provider's keys page, creation step and
+ * format hint. A provider outside the registry gets the generic Direct
+ * screen from the name and keys page your app supplies:
+ *
+ *   providers: ["openai", "fal", { id: "runway", name: "Runway",
+ *     keysUrl: "https://dev.runwayml.com/" }],
+ *
+ * Vault offers only the providers the registry marks modes.vault.
+ *
  * Rendering: a shadow root on the target and one on a body-level overlay,
  * styled through a constructable stylesheet (a <style> element where the
  * constructor is missing). No inline styles, no external CSS, no fonts, no
@@ -46,11 +56,13 @@
 import type { ConnectButtonHandle, ConnectButtonOptions } from "./types.js";
 import { Widget } from "./widget.js";
 
-export type { ConnectButtonHandle, ConnectButtonOptions, ConnectMode, UiProvider } from "./types.js";
+export type {
+  ConnectButtonHandle, ConnectButtonOptions, ConnectMode, CustomProvider, UiProvider,
+} from "./types.js";
 
 /** Mount the Connect your AI button on `target`. Throws an OutletError at
- *  once for options that cannot work (an unknown provider, Vault without
- *  appId and redirectUri, no providers). */
+ *  once for options that cannot work (a provider outside the registry with
+ *  no name, Vault without appId and redirectUri, no providers). */
 export function mountConnectButton(
   target: HTMLElement,
   options: ConnectButtonOptions,

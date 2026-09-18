@@ -138,11 +138,12 @@ describe("options that cannot work fail at mount", () => {
     try { fn(); } catch (e) { return e as OutletError; }
     throw new Error("expected a throw");
   };
-  it("unknown provider", () => {
-    const e = err(() => mountConnectButton(document.createElement("div"), { ...base, mode: "direct", providers: ["groq"] }));
+  it("a provider outside the registry, named by id alone", () => {
+    const e = err(() => mountConnectButton(document.createElement("div"), { ...base, mode: "direct", providers: ["runway"] }));
     expect(e).toBeInstanceOf(OutletError);
     expect(e.code).toBe("ui_provider_unsupported");
-    expect(e.message).toContain("groq");
+    expect(e.message).toContain("runway");
+    expect(e.message).toContain("{ id, name, keysUrl }");
   });
   it("no providers", () => {
     expect(err(() => mountConnectButton(document.createElement("div"), { ...base, mode: "direct", providers: [] })).code).toBe("ui_no_providers");

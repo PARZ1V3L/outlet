@@ -1,10 +1,22 @@
 /** Connect your AI widget: the public types of `@useoutlet/sdk/ui`. */
 import type { OutletSession, Provider } from "../types.js";
 
-/** The providers the widget has screens for. The core's direct() still
- *  accepts any OpenAI-compatible provider; the widget refuses others at
- *  mount so a developer learns early, not from an empty provider list. */
-export type UiProvider = "openai" | "anthropic" | "google";
+/** A provider id the button shows screens for: a provider registry id
+ *  (providers.ts), or the id of a provider the app describes itself. */
+export type UiProvider = Provider;
+
+/** A provider outside the registry. The button shows it the generic Direct
+ *  screen with this name and this keys page. A registry id keeps its named
+ *  Direct screen, whatever else the object says. */
+export interface CustomProvider {
+  /** The key the session files this provider's key under: session.keys[id]. */
+  id: string;
+  /** The provider's display name, as its users know it. */
+  name: string;
+  /** The provider's official page for getting a key (https). Without one,
+   *  the screen says the app gave none and still takes a key the person has. */
+  keysUrl?: string;
+}
 
 /** Which doors the button opens. "both" offers the choice; a single mode
  *  never shows the other one. */
@@ -12,9 +24,11 @@ export type ConnectMode = "direct" | "vault" | "both";
 
 export interface ConnectButtonOptions {
   mode: ConnectMode;
-  /** The providers your app supports. Direct offers each of them; a Vault
-   *  request names one, the first Vault-capable provider in the list. */
-  providers: Provider[];
+  /** The providers your app supports. Direct offers each of them: a
+   *  registry id gets its named Direct screen, a CustomProvider the generic
+   *  one. A Vault request names one provider, the first in the list the
+   *  registry marks modes.vault. */
+  providers: Array<Provider | CustomProvider>;
   /** Vault: your registered app id (app_…). */
   appId?: string;
   /** Vault: the registered return address handleRedirect() runs on. */

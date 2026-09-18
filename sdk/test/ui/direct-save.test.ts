@@ -56,12 +56,12 @@ describe("Save", () => {
     expect(sheet().querySelector(".wink")).toBeNull();
   });
 
-  it("Google and Anthropic bind their own names", async () => {
-    const g = toPaste("Google");
+  it("Gemini and Anthropic bind their own names", async () => {
+    const g = toPaste("Gemini");
     paste(GOOGLE_KEY);
     await flush();
     expect(state()).toBe("direct-google-connected");
-    expect(trigger(g.target).getAttribute("aria-label")).toBe("Connected to Google in Direct");
+    expect(trigger(g.target).getAttribute("aria-label")).toBe("Connected to Gemini in Direct");
     cleanup();
     const a = toPaste("Anthropic");
     paste(ANTHROPIC_KEY);
@@ -94,7 +94,8 @@ describe("Save", () => {
     const err = sheet().querySelector("#outlet-error") as HTMLElement;
     expect(err.hidden).toBe(false);
     expect(err.textContent).toBe("Copy the whole OpenAI Direct API key and try again.");
-    expect(field.getAttribute("aria-describedby")).toBe("outlet-error");
+    // the error speaks first, the format hint stays beside it
+    expect(field.getAttribute("aria-describedby")).toBe("outlet-error outlet-hint");
     expect(field.getAttribute("aria-invalid")).toBe("true");
     expect(activeInSheet()).toBe(field);
     // from the Save button, the focus move into the described field speaks: no second announcement
@@ -131,7 +132,7 @@ describe("Save", () => {
     const err = sheet().querySelector("#outlet-error") as HTMLElement;
     expect(err.hidden).toBe(true);
     expect(err.textContent).toBe("");
-    expect(input().getAttribute("aria-describedby")).toBeNull();
+    expect(input().getAttribute("aria-describedby")).toBe("outlet-hint");
     expect(input().getAttribute("aria-invalid")).toBe("true");
   });
 
@@ -158,7 +159,7 @@ describe("Save", () => {
     const field = input();
     paste(GOOGLE_KEY);
     await flush();
-    expect(heading()).toBe("This looks like Google");
+    expect(heading()).toBe("This looks like Gemini");
     expect(field.value).toBe("");
     click("Try another Direct API key");
     expect(state()).toBe("direct-openai-paste");

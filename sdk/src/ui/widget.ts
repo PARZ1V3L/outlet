@@ -13,15 +13,16 @@ import {
   renderChecking, renderChoose, renderDirectConnected, renderDirectError, renderEntry,
   renderGuide, renderPaste, renderProviderList, applyFieldError,
 } from "./render-direct.js";
-import type { Actions, Rendered } from "./render-shell.js";
+import { type Actions, type Rendered, closeButton } from "./render-shell.js";
 import {
   renderVaultChecking, renderVaultConnected, renderVaultExplain, renderVaultLeaving,
   renderVaultError,
 } from "./render-vault.js";
 import {
-  type Config, type View, connectedView, directStart, directView, openingView, parentView,
-  vaultView,
+  type Config, type View, connectedView, directStart, directView, isDirectError, openingView,
+  parentView, vaultView,
 } from "./routes.js";
+import { screenProvider } from "./screen-provider.js";
 import { Overlay } from "./sheet.js";
 import { adoptStyles } from "./styles.js";
 import type { ConnectButtonHandle, ConnectButtonOptions } from "./types.js";
@@ -151,7 +152,7 @@ export class Widget {
     const id = view.id;
     if (id === "choose") return renderChoose(view, cfg, a);
     if (id === "direct-provider" || id === "direct-only") return renderProviderList(view, cfg, a);
-    if (id.startsWith("direct-error-")) return renderDirectError(view, cfg, a);
+    if (isDirectError(id)) return renderDirectError(view, cfg, a);
     if (id.startsWith("direct-")) {
       if (id.endsWith("-entry")) return renderEntry(view, cfg, a);
       if (id.endsWith("-guide")) return renderGuide(view, cfg, a);
@@ -168,7 +169,7 @@ export class Widget {
 
   private bind(b: Bound): void {
     this.bound = b;
-    setConnected(this.trigger, b.mode, b.provider);
+    setConnected(this.trigger, b.mode, screenProvider(this.cfg, b.provider).name);
   }
 
   /** Tell the app, and carry on if its handler throws or is not a function. */
@@ -208,7 +209,7 @@ export class Widget {
         return;
       }
       const kind = clean(raw) === "" ? "empty" : "format";
-      const words = applyFieldError(r, kind, provider);
+      const words = applyFieldError(r, kind, screenProvider(this.cfg, provider).name);
       // Announced once: from the field, the live region speaks; from Save,
       // the focus move into the described field speaks instead.
       if (wasInField) this.overlay.announce(words);
@@ -218,8 +219,17 @@ export class Widget {
     }
     if (this.destroyed || this.rendered !== r) return;
     input.value = "";
-    this.show(directView("checking", provider));
-    this.announce();
+    if (screenProvider(this.cfg, provider).entry) {
+      this.show(directView("checking", provider));
+      this.announce();
+    } else {
+      // The generic screen claims no format check, so it shows no checking
+      // state: the paste screen waits, its field and Save held, for the app.
+      input.disabled = true;
+      r.sheet.querySelector<HTMLButtonElement>("button.save")?.setAttribute("disabled", "");
+      r.sheet.setAttribute("aria-busy", "true");
+      closeButton(r.sheet)?.focus({ preventScroll: true });
+    }
     try {
       await this.opts.onSession(session);
     } catch (e) {
@@ -273,7 +283,7 @@ export class Widget {
    *  handleRedirect()) shows the Vault checking screen until it settles. */
   private takeSession(s: OutletSession | Promise<OutletSession>): void {
     if (!(s instanceof Promise) && typeof (s as { then?: unknown }).then !== "function") {
-      const b = boundFrom(s as OutletSession);
+      const b = boundFrom(s as OutletSession, this.cfg);
       if (b) this.bind(b);
       return;
     }
@@ -286,7 +296,7 @@ export class Widget {
       let bound: Bound;
       try {
         const session = await (s as Promise<OutletSession>);
-        const b = boundFrom(session);
+        const b = boundFrom(session, this.cfg);
         // Connected needs a key this button has a screen for; anything else is a failed return.
         if (!b) throw new OutletError("The session holds no key this button knows.", "ui_session_unbound");
         await this.opts.onSession(session);

@@ -3,7 +3,7 @@
  * where Back leads. Pure functions over the mount configuration so the
  * rules are testable without a DOM.
  */
-import type { ConnectMode, UiProvider } from "./types.js";
+import type { ConnectMode, CustomProvider, UiProvider } from "./types.js";
 
 export interface Config {
   mode: ConnectMode;
@@ -11,37 +11,31 @@ export interface Config {
   direct: UiProvider[];
   /** The one provider a Vault request names, or null when Vault is off. */
   vault: UiProvider | null;
+  /** The providers outside the registry, as the app described them. */
+  custom?: Record<string, CustomProvider>;
 }
 
+export type DirectStep = "entry" | "guide" | "paste" | "checking" | "connected";
+export type VaultStep = "explain" | "leaving" | "connected" | "start-error" | "return-error" | "return-checking";
+type VaultScreen = Exclude<VaultStep, "explain"> | "explain" | "only";
+
+export const DIRECT_ERRORS = [
+  "direct-error-empty", "direct-error-format", "direct-error-wrong-provider",
+  "direct-error-admin-refused", "direct-error-unsupported", "direct-error-handoff-error",
+] as const;
+export type DirectErrorId = (typeof DIRECT_ERRORS)[number];
+
+/** OpenAI's Vault screens keep the ids they had before a second provider
+ *  had any: "vault-explain". Every other provider's carry its id:
+ *  "vault-anthropic-explain", "vault-fal-explain". */
 export type StateId =
   | "choose"
   | "direct-provider"
   | "direct-only"
-  | `direct-${UiProvider}-entry`
-  | `direct-${UiProvider}-guide`
-  | `direct-${UiProvider}-paste`
-  | `direct-${UiProvider}-checking`
-  | `direct-${UiProvider}-connected`
-  | "direct-error-empty"
-  | "direct-error-format"
-  | "direct-error-wrong-provider"
-  | "direct-error-admin-refused"
-  | "direct-error-unsupported"
-  | "direct-error-handoff-error"
-  | "vault-explain"
-  | "vault-only"
-  | "vault-leaving"
-  | "vault-connected"
-  | "vault-start-error"
-  | "vault-return-error"
-  | "vault-return-checking"
-  | "vault-anthropic-explain"
-  | "vault-anthropic-only"
-  | "vault-anthropic-leaving"
-  | "vault-anthropic-connected"
-  | "vault-anthropic-start-error"
-  | "vault-anthropic-return-error"
-  | "vault-anthropic-return-checking";
+  | `direct-${string}-${DirectStep}`
+  | DirectErrorId
+  | `vault-${VaultScreen}`
+  | `vault-${string}-${VaultScreen}`;
 
 export interface View {
   id: StateId;
@@ -54,9 +48,11 @@ export interface View {
   fresh?: boolean;
 }
 
-export type VaultStep = "explain" | "leaving" | "connected" | "start-error" | "return-error" | "return-checking";
+export function isDirectError(id: string): id is DirectErrorId {
+  return (DIRECT_ERRORS as readonly string[]).includes(id);
+}
 
-export function directView(id: "entry" | "guide" | "paste" | "checking" | "connected", provider: UiProvider): View {
+export function directView(id: DirectStep, provider: UiProvider): View {
   return { id: `direct-${provider}-${id}`, provider };
 }
 
@@ -77,13 +73,15 @@ export function directStart(cfg: Config): View {
  *  The provider defaults to the one the request names; a completed
  *  connection passes the provider it actually bound. */
 export function vaultView(cfg: Config, step: VaultStep, provider: UiProvider | null = cfg.vault): View {
-  const single = cfg.mode === "vault";
-  const anthropic = provider === "anthropic";
-  if (step === "explain") {
-    if (anthropic) return { id: single ? "vault-anthropic-only" : "vault-anthropic-explain" };
-    return { id: single ? "vault-only" : "vault-explain" };
-  }
-  return { id: anthropic ? `vault-anthropic-${step}` : `vault-${step}` };
+  const screen: VaultScreen = step === "explain" && cfg.mode === "vault" ? "only" : step;
+  if (!provider || provider === "openai") return { id: `vault-${screen}` };
+  return { id: `vault-${provider}-${screen}` };
+}
+
+/** The provider a Vault screen's id names. */
+export function vaultProviderOf(id: string): UiProvider {
+  const m = /^vault-(.+)-(?:explain|only|leaving|connected|start-error|return-error|return-checking)$/.exec(id);
+  return m ? (m[1] as UiProvider) : "openai";
 }
 
 /** The first screen the button opens. */
@@ -98,19 +96,13 @@ export function connectedView(cfg: Config, mode: "direct" | "vault", provider: U
   return mode === "direct" ? directView("connected", provider) : vaultView(cfg, "connected", provider);
 }
 
-const noBack = new Set<string>([
-  "choose", "direct-only", "vault-only", "vault-anthropic-only",
-  "vault-return-checking", "vault-anthropic-return-checking",
-  "vault-connected", "vault-anthropic-connected",
-]);
-
 /** Where Back leads, or null when this screen has no Back. Single-mode
  *  entries and the transient or final screens have none. */
 export function parentView(cfg: Config, view: View): View | null {
   const { id, provider } = view;
-  if (noBack.has(id)) return null;
+  if (id === "choose" || id === "direct-only") return null;
   if (id === "direct-provider") return { id: "choose" };
-  if (id.startsWith("direct-error-")) {
+  if (isDirectError(id)) {
     // The two field errors are the paste screen itself, so Back goes where
     // the paste screen's Back goes. The others sit on top of it.
     if (id === "direct-error-empty" || id === "direct-error-format") {
@@ -128,7 +120,8 @@ export function parentView(cfg: Config, view: View): View | null {
     }
     return directView("entry", provider);
   }
-  if (id === "vault-explain" || id === "vault-anthropic-explain") return { id: "choose" };
+  if (id.endsWith("-only") || id.endsWith("-return-checking") || id.endsWith("-connected")) return null;
+  if (id.endsWith("-explain")) return { id: "choose" };
   // Leaving and errors go back to the explanation
   return vaultView(cfg, "explain");
 }

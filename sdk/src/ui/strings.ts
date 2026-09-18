@@ -1,18 +1,11 @@
 /**
- * Every visible word in the Connect your AI widget, keyed by the design's
- * state ids. `{provider}` is the provider the person chose, `{other}`
- * the one a pasted key looks like, both filled from `providers` below.
+ * Every visible word in the Connect your AI widget that is not a provider's
+ * own value. `{provider}` is the provider the person chose, `{other}` the
+ * one a pasted key looks like, both filled with display names. A registry
+ * provider's creation step and format hint live in its registry entry
+ * (../providers.ts). direct-words.ts puts a provider's screens together.
  */
-import type { UiProvider } from "./types.js";
-import type {
-  EntryStrings, GuideStrings, PasteStrings, StatusStrings, VaultExplainStrings, VaultStatusStrings,
-} from "./strings-shape.js";
-
-export const providers: Record<UiProvider, string> = {
-  openai: "OpenAI",
-  anthropic: "Anthropic",
-  google: "Google",
-};
+import type { VaultExplainStrings } from "./strings-shape.js";
 
 /** The shared chrome. */
 export const common = {
@@ -42,118 +35,97 @@ export const choose = {
   },
 };
 
-const providerList = {
+export const providerList = {
   header: "Direct",
   title: "Choose your provider",
   lead: "Use your own Direct API key.",
 };
 
-const pasteLines = ["Checked on this device.", "Passed to this app.", "Never sent to Outlet."];
-const connectedLines = ["Your Direct API key is ready for this app."];
-
-export const direct = {
-  "direct-provider": providerList,
-  "direct-only": providerList,
-
-  "direct-openai-entry": {
-    header: "Direct · OpenAI",
+/** The named Direct screen: one template for every registry provider. */
+export const directTemplate = {
+  header: "Direct · {provider}",
+  entry: {
     title: "Your Direct API key",
-    note: "OpenAI API credits are billed separately from ChatGPT.",
+    note: "Use your {provider} Direct API key in this app.",
     get: "Get my Direct API key",
     have: "I have my Direct API key",
-  } satisfies EntryStrings as EntryStrings,
-  "direct-openai-guide": {
-    header: "Direct · OpenAI",
+  },
+  guide: {
     title: "Get your Direct API key",
-    steps: ["Open the OpenAI website", "Create an API key. OpenAI calls it a secret key.", "Copy it and return here."],
-    linkUrl: "https://platform.openai.com/api-keys",
+    open: "Open the {provider} website",
+    copy: "Copy it and return here.",
     paste: "Paste my Direct API key",
     guide: "Full Direct guide",
-    guideUrl: "https://useoutlet.dev/docs/users/openai-api-key.html",
-  } satisfies GuideStrings as GuideStrings,
-  "direct-openai-paste": {
-    header: "Direct · OpenAI",
+  },
+  paste: {
     title: "Paste your Direct API key",
-    lines: pasteLines,
-    label: "Direct API key · OpenAI",
+    lines: ["Checked on this device.", "Passed to this app.", "Never sent to Outlet."],
+    label: "Direct API key · {provider}",
     placeholder: "Paste your Direct API key",
     save: "Save",
-  } satisfies PasteStrings as PasteStrings,
-  "direct-openai-checking": { header: "Direct · OpenAI", title: "Checking the format" } satisfies StatusStrings as StatusStrings,
-  "direct-openai-connected": {
-    header: "Direct · OpenAI",
-    title: "Connected to OpenAI",
-    lines: connectedLines,
+  },
+  checking: { title: "Checking the format" },
+  connected: {
+    title: "Connected to {provider}",
+    lines: ["Your Direct API key is ready for this app."],
     done: "Done",
-  } satisfies StatusStrings as StatusStrings,
-
-  "direct-anthropic-entry": {
-    header: "Direct · Anthropic",
-    title: "Your Direct API key",
-    note: "Anthropic API credits are billed separately from Claude subscriptions.",
-    get: "Get my Direct API key",
-    have: "I have my Direct API key",
-  } satisfies EntryStrings as EntryStrings,
-  "direct-anthropic-guide": {
-    header: "Direct · Anthropic",
-    title: "Get your Direct API key",
-    steps: ["Open the Anthropic website", "Create an API key.", "Copy it and return here."],
-    linkUrl: "https://platform.claude.com/settings/keys",
-    paste: "Paste my Direct API key",
-    guide: "Full Direct guide",
-    guideUrl: "https://useoutlet.dev/docs/users/anthropic-api-key.html",
-  } satisfies GuideStrings as GuideStrings,
-  "direct-anthropic-paste": {
-    header: "Direct · Anthropic",
-    title: "Paste your Direct API key",
-    lines: pasteLines,
-    label: "Direct API key · Anthropic",
-    placeholder: "Paste your Direct API key",
-    save: "Save",
-  } satisfies PasteStrings as PasteStrings,
-  "direct-anthropic-checking": { header: "Direct · Anthropic", title: "Checking the format" } satisfies StatusStrings as StatusStrings,
-  "direct-anthropic-connected": {
-    header: "Direct · Anthropic",
-    title: "Connected to Anthropic",
-    lines: connectedLines,
-    done: "Done",
-  } satisfies StatusStrings as StatusStrings,
-
-  "direct-google-entry": {
-    header: "Direct · Google",
-    title: "Your Direct API key",
-    get: "Get my Direct API key",
-    have: "I have my Direct API key",
-  } satisfies EntryStrings as EntryStrings,
-  "direct-google-guide": {
-    header: "Direct · Google",
-    title: "Get your Direct API key",
-    lines: ["Open Google AI Studio and create an API key.", "Return here when you have copied it."],
-    link: "Open the Google website",
-    linkUrl: "https://aistudio.google.com/api-keys",
-    paste: "Paste my Direct API key",
-    guide: "Full Direct guide",
-    guideUrl: "https://ai.google.dev/gemini-api/docs/api-key",
-  } satisfies GuideStrings as GuideStrings,
-  "direct-google-paste": {
-    header: "Direct · Google",
-    title: "Paste your Direct API key",
-    lines: pasteLines,
-    label: "Direct API key · Google",
-    placeholder: "Paste your Direct API key",
-    save: "Save",
-  } satisfies PasteStrings as PasteStrings,
-  "direct-google-checking": { header: "Direct · Google", title: "Checking the format" } satisfies StatusStrings as StatusStrings,
-  "direct-google-connected": {
-    header: "Direct · Google",
-    title: "Connected to Google",
-    lines: connectedLines,
-    done: "Done",
-  } satisfies StatusStrings as StatusStrings,
+  },
 };
 
-/** The Direct error screens. The design shows them for OpenAI; the widget
- *  fills {provider} and {other} for whichever pair applies. */
+/** What one provider's named screen says in place of the template's line. */
+export interface ProviderWords {
+  /** The entry note. */
+  note?: string;
+  /** The label of the guide's linked first step. */
+  open?: string;
+  /** The guide's third step. */
+  copy?: string;
+  /** A line under the guide's steps. */
+  scope?: string;
+  /** The full guide, only where the page exists. */
+  guideUrl?: string;
+}
+
+export const providerWords: Record<string, ProviderWords> = {
+  openai: {
+    note: "OpenAI API credits are billed separately from ChatGPT.",
+    guideUrl: "https://useoutlet.dev/docs/users/openai-api-key.html",
+  },
+  anthropic: {
+    note: "Anthropic API credits are billed separately from Claude subscriptions.",
+    guideUrl: "https://useoutlet.dev/docs/users/anthropic-api-key.html",
+  },
+  google: {
+    open: "Open Google AI Studio",
+    copy: "Copy your Direct API key and return here.",
+    guideUrl: "https://ai.google.dev/gemini-api/docs/api-key",
+  },
+  higgsfield: { note: "Use your Higgsfield key ID and secret together as your Direct API key." },
+  huggingface: { note: "Hugging Face calls your Direct API key an access token." },
+  fal: {
+    note: "Use an API-scope fal key as your Direct API key.",
+    open: "Open fal’s keys page",
+    scope: "ADMIN scope is for your Vault admin key.",
+  },
+  replicate: {
+    note: "Replicate calls your Direct API key an API token.",
+    open: "Open Replicate’s API tokens page",
+  },
+};
+
+/** The generic Direct screen, for a provider the app describes. The app
+ *  supplies the name and the keys page. No format check of that provider's
+ *  own runs, so the screen claims none. */
+export const directGeneric = {
+  note: "Use your {provider} Direct API key in this app.",
+  open: "Open {provider} to get your Direct API key",
+  create: "Follow {provider}’s steps to create your Direct API key.",
+  copy: "Copy your Direct API key and return here.",
+  reassurance: "Your Direct API key is passed to this app. It is never sent to Outlet.",
+  noKeysPage: "This app has not provided a page for getting your {provider} Direct API key.",
+};
+
+/** The Direct error screens, for whichever pair of providers applies. */
 export const directErrors = {
   "direct-error-empty": {
     header: "Direct · {provider}",
@@ -204,97 +176,80 @@ const vaultAccess = [
   "This app gets its own capped Vault App key in your account.",
   "Revoke Vault access any time.",
 ];
-const leavingLines = ["Review Vault access on useoutlet.dev.", "You’ll return here after approval."];
-const returnErrorLines = ["Approval did not finish.", "Return to Outlet to try again."];
-const vaultConnectedLines = [
-  "This app has its own capped Vault App key.",
-  "Revoke Vault access any time on useoutlet.dev.",
-];
-const startError = { title: "Couldn’t open Outlet", lines: ["Your Vault connection hasn’t started."], retry: "Try again" };
-const manageUrl = "https://useoutlet.dev/account/";
 
-/** Single-mode variants keep the same words, so vault-only and
- *  vault-anthropic-only share the explain entries. Split them to differ. */
-const explainOpenai: VaultExplainStrings = {
-  header: "Vault · OpenAI",
-  title: "Connect your account",
-  intro: vaultIntro,
-  details: "Vault access and caps",
-  lines: vaultAccess,
-  fine: vaultFine,
-  continue: "Continue to Outlet",
-};
-const explainAnthropic: VaultExplainStrings = {
-  header: "Vault · Anthropic",
-  title: "Connect Anthropic",
-  intro: [],
-  steps: [
-    { title: "Connect your account", body: "Add your Vault admin key on useoutlet.dev.", note: "Never given to apps." },
-    { title: "Approve this app", body: "Review its Vault access and cap." },
-    { title: "Create its Vault App key", body: "Create an API key in the workspace named on Outlet. Paste it into Outlet." },
-  ],
-  details: "Vault access and caps",
-  lines: vaultAccess,
-  fine: vaultFine,
-  continue: "Continue to Outlet",
-};
-
-export const vault = {
-  "vault-explain": explainOpenai,
-  "vault-only": explainOpenai,
-  "vault-leaving": {
-    header: "Vault · OpenAI",
-    title: "Opening Outlet",
-    lines: leavingLines,
+/** The Vault explanation, one per provider the registry marks modes.vault.
+ *  Both-mode and Vault-only mounts share a provider's words. */
+export const vaultExplain: Record<string, VaultExplainStrings> = {
+  openai: {
+    title: "Connect your account",
+    intro: vaultIntro,
+    details: "Vault access and caps",
+    lines: vaultAccess,
+    fine: vaultFine,
     continue: "Continue to Outlet",
-  } satisfies VaultStatusStrings as VaultStatusStrings,
-  "vault-return-checking": {
-    header: "Vault · OpenAI",
+  },
+  anthropic: {
+    title: "Connect Anthropic",
+    intro: [],
+    steps: [
+      { title: "Connect your account", body: "Add your Vault admin key on useoutlet.dev.", note: "Never given to apps." },
+      { title: "Approve this app", body: "Review its Vault access and cap." },
+      { title: "Create its Vault App key", body: "Create an API key in the workspace named on Outlet. Paste it into Outlet." },
+    ],
+    details: "Vault access and caps",
+    lines: vaultAccess,
+    fine: vaultFine,
+    continue: "Continue to Outlet",
+  },
+  // fal enforces no limit of its own on a key, so its cap line stays in
+  // view: the person reads it before approving, without opening the detail.
+  fal: {
+    title: "Connect your account",
+    intro: [
+      "Add your fal Vault admin key on useoutlet.dev.",
+      "On fal, create your Vault admin key with ADMIN scope and name it Outlet.",
+      "Outlet uses your Vault admin key to create and delete this app’s Vault App key.",
+      "Your Vault admin key is never given to apps.",
+    ],
+    details: "Vault access and caps",
+    lines: [
+      "This app gets its own Vault App key in your fal account.",
+      "Outlet tracks spending for this Vault App key from fal’s usage reports.",
+      "Revoke Vault access any time.",
+    ],
+    fine: "fal does not enforce a spending limit on each Vault App key. Outlet uses delayed fal spending reports to enforce your Vault cap. Spending can exceed the Vault cap.",
+    fineInView: true,
+    continue: "Continue to Outlet",
+  },
+};
+
+/** The Vault screens after the explanation, the same for every provider. */
+export const vaultStatus = {
+  header: "Vault · {provider}",
+  leaving: {
+    title: "Opening Outlet",
+    lines: ["Review Vault access on useoutlet.dev.", "You’ll return here after approval."],
+    continue: "Continue to Outlet",
+  },
+  "return-checking": {
     title: "Checking your Vault connection",
     lines: ["Waiting for Outlet to confirm access."],
-  } satisfies VaultStatusStrings as VaultStatusStrings,
-  "vault-connected": {
-    header: "Vault · OpenAI",
-    title: "Connected to OpenAI",
-    lines: vaultConnectedLines,
+  },
+  connected: {
+    title: "Connected to {provider}",
+    lines: ["This app has its own capped Vault App key.", "Revoke Vault access any time on useoutlet.dev."],
     manage: "Manage Vault access",
-    manageUrl,
+    manageUrl: "https://useoutlet.dev/account/",
     done: "Done",
-  } satisfies VaultStatusStrings as VaultStatusStrings,
-  "vault-start-error": { header: "Vault · OpenAI", ...startError } satisfies VaultStatusStrings as VaultStatusStrings,
-  "vault-return-error": {
-    header: "Vault · OpenAI",
+  },
+  "start-error": {
+    title: "Couldn’t open Outlet",
+    lines: ["Your Vault connection hasn’t started."],
+    retry: "Try again",
+  },
+  "return-error": {
     title: "Vault is not connected",
-    lines: returnErrorLines,
+    lines: ["Approval did not finish.", "Return to Outlet to try again."],
     retry: "Return to Outlet",
-  } satisfies VaultStatusStrings as VaultStatusStrings,
-
-  "vault-anthropic-explain": explainAnthropic,
-  "vault-anthropic-only": explainAnthropic,
-  "vault-anthropic-leaving": {
-    header: "Vault · Anthropic",
-    title: "Opening Outlet",
-    lines: leavingLines,
-    continue: "Continue to Outlet",
-  } satisfies VaultStatusStrings as VaultStatusStrings,
-  "vault-anthropic-return-checking": {
-    header: "Vault · Anthropic",
-    title: "Checking your Vault connection",
-    lines: ["Waiting for Outlet to confirm access."],
-  } satisfies VaultStatusStrings as VaultStatusStrings,
-  "vault-anthropic-connected": {
-    header: "Vault · Anthropic",
-    title: "Connected to Anthropic",
-    lines: vaultConnectedLines,
-    manage: "Manage Vault access",
-    manageUrl,
-    done: "Done",
-  } satisfies VaultStatusStrings as VaultStatusStrings,
-  "vault-anthropic-start-error": { header: "Vault · Anthropic", ...startError } satisfies VaultStatusStrings as VaultStatusStrings,
-  "vault-anthropic-return-error": {
-    header: "Vault · Anthropic",
-    title: "Vault is not connected",
-    lines: returnErrorLines,
-    retry: "Return to Outlet",
-  } satisfies VaultStatusStrings as VaultStatusStrings,
+  },
 };

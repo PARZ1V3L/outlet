@@ -47,7 +47,7 @@ afterEach(() => {
   vi.mocked(connectRedirect).mockClear();
 });
 
-async function directWalk(provider: "OpenAI" | "Anthropic" | "Google", goodKey: string) {
+async function directWalk(provider: "OpenAI" | "Anthropic" | "Gemini", goodKey: string, id = provider.toLowerCase()) {
   const d = deferred<void>();
   const m = mount();
   m.onSession.mockReturnValue(d.promise);
@@ -63,7 +63,7 @@ async function directWalk(provider: "OpenAI" | "Anthropic" | "Google", goodKey: 
   await flush();
   note();
   expect(trigger(m.target).className).toBe("connected-button");
-  seen.add("button-connected-" + provider.toLowerCase());
+  seen.add("button-connected-" + id);
   cleanup();
 }
 
@@ -71,7 +71,7 @@ describe("the manifest", () => {
   it("every sheet state renders on the way through the flows", async () => {
     await directWalk("OpenAI", OPENAI_KEY);
     await directWalk("Anthropic", ANTHROPIC_KEY);
-    await directWalk("Google", GOOGLE_KEY);
+    await directWalk("Gemini", GOOGLE_KEY, "google");
 
     let m = mount({ mode: "direct", providers: ["openai", "anthropic"] });
     m.handle.open(); note();
@@ -127,7 +127,7 @@ describe("the manifest", () => {
     cleanup();
     await directWalk("OpenAI", OPENAI_KEY);
     await directWalk("Anthropic", ANTHROPIC_KEY);
-    await directWalk("Google", GOOGLE_KEY);
+    await directWalk("Gemini", GOOGLE_KEY, "google");
     expect(BUTTON_STATES.filter((s) => !seen.has(s))).toEqual([]);
   });
 });

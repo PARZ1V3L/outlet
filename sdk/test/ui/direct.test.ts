@@ -30,7 +30,7 @@ describe("the Direct walk", () => {
     click("Direct");
     expect(state()).toBe("direct-provider");
     expect(Array.from(sheet().querySelectorAll<HTMLElement>("button.provider")).map((b) => nameOf(b)))
-      .toEqual(["OpenAI", "Anthropic", "Google"]);
+      .toEqual(["OpenAI", "Anthropic", "Gemini"]);
     click("OpenAI");
     expect(state()).toBe("direct-openai-entry");
     expect(sheet().textContent).toContain("OpenAI API credits are billed separately from ChatGPT.");
@@ -55,22 +55,24 @@ describe("the Direct walk", () => {
     expect(sheet().textContent).toContain("Never sent to Outlet.");
   });
 
-  it("Google gets a provider website action and the Google full guide, no numbered steps", () => {
+  it("google shows as Gemini on the same template: Google AI Studio steps and the Google full guide", () => {
     const { handle } = mount();
     handle.open();
     click("Direct");
-    click("Google");
+    click("Gemini");
     expect(state()).toBe("direct-google-entry");
+    expect(sheet().querySelector(".brand")?.textContent).toBe("Direct · Gemini");
     expect(sheet().textContent).not.toContain("billed separately");
     click("Get my Direct API key");
     expect(state()).toBe("direct-google-guide");
-    expect(sheet().querySelector("ol")).toBeNull();
-    const pill = sheet().querySelector("a.guide-open") as HTMLAnchorElement;
-    expect(pill.textContent?.trim()).toBe("Open the Google website");
+    const steps = Array.from(sheet().querySelectorAll("ol li")).map((li) => li.textContent?.trim());
+    expect(steps).toEqual(["Open Google AI Studio", "Create an API key in Google AI Studio.", "Copy your Direct API key and return here."]);
+    const pill = sheet().querySelector("ol a.guide-open") as HTMLAnchorElement;
     expect(pill.href).toBe("https://aistudio.google.com/api-keys");
     expect((sheet().querySelector("a.guide") as HTMLAnchorElement).href).toBe("https://ai.google.dev/gemini-api/docs/api-key");
     click("Paste my Direct API key");
     expect(state()).toBe("direct-google-paste");
+    expect(sheet().querySelector("label")?.textContent).toBe("Direct API key · Gemini");
   });
 
   it("Anthropic entry names Claude subscriptions and its guide links the Anthropic website", () => {

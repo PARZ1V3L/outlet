@@ -3,10 +3,10 @@
 import { ARROW, DIRECT_MARK, SOCKET, VAULT_MARK, WORDMARK } from "./assets.js";
 import { append, h, svg } from "./dom.js";
 import { type Config, type View, parentView } from "./routes.js";
-import { common, providers } from "./strings.js";
+import { common } from "./strings.js";
 import type { UiProvider } from "./types.js";
 
-export const IDS = { title: "outlet-title", error: "outlet-error", key: "outlet-key" };
+export const IDS = { title: "outlet-title", error: "outlet-error", key: "outlet-key", hint: "outlet-hint" };
 
 /** What a screen can ask the widget to do. */
 export interface Actions {
@@ -105,11 +105,14 @@ export function bullets(lines: string[]): HTMLUListElement {
   return h("ul", { class: "explanation" }, ...lines.map((t) => h("li", {}, t)));
 }
 
-/** The same reassurance, kept beside key entry without bullet-list spacing. */
+/** The same reassurance, kept beside key entry without bullet-list spacing.
+ *  Three lines carry the device, the hand-off and the lock. One line alone
+ *  (the generic screen) carries the lock. */
 export function keyReassurance(lines: string[]): HTMLUListElement {
   const paths = ["M5 4h14v12H5zM3 20h18", "M5 12h14m-6-6 6 6-6 6", "M8 10V7a4 4 0 0 1 8 0v3M6 10h12v11H6z"];
+  const pathFor = (i: number) => (lines.length === 1 ? paths[2] : paths[i] ?? paths[2]);
   return h("ul", { class: "explanation key-reassurance" }, ...lines.map((line, i) => h("li", {},
-    svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${paths[i] ?? paths[2]}"/></svg>`),
+    svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${pathFor(i)}"/></svg>`),
     h("span", {}, line))));
 }
 
@@ -150,11 +153,4 @@ export function message(o: { busy?: boolean; wink?: boolean; title: string; line
   const wrap = h("div", { class: "message" }, mark, head);
   append(wrap, paragraphs(o.lines ?? []));
   return { wrap, heading: head };
-}
-
-/** Fill {provider} and {other} in a strings.ts line with display names. */
-export function fill(text: string, provider?: UiProvider, other?: UiProvider): string {
-  return text
-    .replace(/\{provider\}/g, provider ? providers[provider] : "")
-    .replace(/\{other\}/g, other ? providers[other] : "");
 }
