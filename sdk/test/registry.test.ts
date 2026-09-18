@@ -71,6 +71,27 @@ describe("the provider registry", () => {
     }
   });
 
+  it("a format hint names a prefix only where the documentation gives one", () => {
+    const naming = providers.filter((p) => p.formatHint.includes("starts with"));
+    expect(naming.map((p) => p.id)).toEqual([
+      "google", "deepseek", "xai", "perplexity", "openrouter", "groq", "cerebras", "fireworks",
+      "huggingface", "replicate",
+    ]);
+    for (const p of naming) {
+      expect(p.formatHint).toBe(`Your ${p.displayName} Direct API key starts with ${p.keyShape?.prefix}.`);
+    }
+  });
+
+  it("a provider with no documented key shape gets the no-prefix hint", () => {
+    const shapeless = providers.filter((p) => !p.keyShape);
+    expect(shapeless.map((p) => p.id)).toEqual(["moonshot", "mistral", "minimax", "together"]);
+    for (const p of shapeless) {
+      expect(p.formatHint).toBe(`Paste your whole ${p.displayName} Direct API key.`);
+    }
+    expect(getProvider("moonshot")?.formatHint).toBe("Paste your whole Kimi Direct API key.");
+    expect(getProvider("minimax")?.formatHint).toBe("Paste your whole MiniMax Direct API key.");
+  });
+
   it("getProvider() answers by id and knows nothing else", () => {
     expect(getProvider("xai")?.displayName).toBe("Grok");
     expect(getProvider("runway")).toBeUndefined();

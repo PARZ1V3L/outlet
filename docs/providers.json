@@ -159,7 +159,7 @@
       "keysUrl": "https://platform.kimi.ai/console/api-keys",
       "keyTerm": "API key",
       "createAction": "Create an API key.",
-      "formatHint": "Your Kimi Direct API key starts with sk-.",
+      "formatHint": "Paste your whole Kimi Direct API key.",
       "keyShape": null,
       "openaiCompatible": true,
       "modes": {
@@ -236,7 +236,7 @@
       "keysUrl": "https://platform.minimax.io/user-center/basic-information/interface-key",
       "keyTerm": "API key",
       "createAction": "Create an API key.",
-      "formatHint": "Your MiniMax Direct API key starts with eyJ.",
+      "formatHint": "Paste your whole MiniMax Direct API key.",
       "keyShape": null,
       "openaiCompatible": true,
       "modes": {
