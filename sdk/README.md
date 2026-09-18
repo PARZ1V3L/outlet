@@ -41,7 +41,7 @@ Mount on an empty div with mode: "both", appId and redirectUri.
 Vault return: pass Outlet.handleRedirect() as session only when the return address has code and state.
 Receive the Direct or Vault session through onSession.
 No app secret in the app.
-Provider: choose openai or anthropic. Send exactly one provider per connection request.
+Vault provider: choose openai, anthropic or fal. Use a separate Vault connection request for each provider.
 Place the Connect your AI button where users connect their AI account.
 After connect: call the provider with its official SDK using session.keys.<provider>.
 ```
@@ -156,6 +156,108 @@ registered return address (a private scheme like com.yourapp:/outlet/return,
 or your website), then call `exchangeCode()`. React Native has no Web
 Crypto: pass `crypto: { getRandomValues, sha256 }` from expo-crypto to
 `createGrant()`. Guide: https://useoutlet.dev/docs/dev/mobile
+
+## Media apps
+
+Choose the provider that serves the models your app needs. The provider and
+model determine which images, video or voice your app can make.
+
+**Model hosts**
+
+fal serves models from other makers for image, video and voice apps. Use an
+API-scope fal Direct API key for Direct. For Vault, the user adds an
+ADMIN-scope fal Vault admin key on useoutlet.dev. Your app receives a
+separate Vault App key.
+
+Replicate serves models from other makers. Use a Replicate API token as a
+Direct API key. Replicate is Direct only because it does not provide an API
+for Outlet to create separate Vault App keys.
+
+**Model makers**
+
+OpenAI’s gpt-image-2 and gpt-image-2.5 image models run through the existing
+OpenAI Vault connection. Anthropic can provide text alongside media through
+Direct or Vault. Google’s Gemini API is Direct only. Veo uses a long-running
+operation; submitting a request does not mean the result is ready.
+
+Other providers can use the generic Direct screen. Your app supplies the
+provider’s name and official page for getting a Direct API key. Implement and
+check that provider’s model calls in your app.
+
+```ts
+mountConnectButton(target, {
+  mode: "direct",
+  providers: ["fal", "replicate", { id: "runway", name: "Runway", keysUrl: "https://dev.runwayml.com/" }],
+  onSession,
+});
+```
+
+**Vault caps for media**
+
+fal does not enforce a spending limit on each Vault App key. Outlet measures
+the Vault App key’s spending from delayed fal reports. Outlet deletes the
+Vault App key when reported spending reaches the Vault cap. Spending can
+exceed the Vault cap, especially when jobs are costly or already running.
+Revoking Vault access may not stop work the provider has accepted.
+
+## Background jobs and workers
+
+Use Vault for work your app must manage after the browser closes. Keep the
+Vault connection and its refresh credentials in protected server storage,
+associated with the user, app and provider. Your worker loads that connection
+to obtain the app’s Vault App key. The app never receives the Vault admin key.
+
+Refresh the Vault connection before access expires. Save the refreshed
+connection before the next job uses it. Check Vault access before submitting
+more work.
+
+On a 401 response, stop submitting jobs and check whether the failure came
+from Outlet or the provider. If the Vault connection has expired, refresh it.
+If refresh fails or access is no longer active, ask the user to reconnect
+through Outlet. Do not repeatedly retry a rejected Vault App key or resubmit
+a generation whose outcome is unknown.
+
+If Vault access is paused, stop new work and show that the connection needs
+attention on Outlet. If Vault access is revoked, require the user’s approval
+before reconnecting. If the Vault cap is reached, stop new work and show that
+the Vault cap has been reached. Do not create another Vault connection to
+bypass the Vault cap.
+
+For fal, submit long jobs to its queue. Save the request ID with the job so
+the worker can check that request instead of submitting it again. Use polling
+or fal webhooks to collect the result. Verify webhook signatures and handle
+repeated deliveries without processing the result twice.
+
+When Vault access stops, stop local retries and further submissions. Request
+cancellation of pending provider work where available. Cancellation may fail
+to stop work already processing, so a job can still finish and be charged
+after Vault access is stopped.
+
+Direct API keys stay in the browser. Do not move a Direct API key into your
+server or worker to keep a job running. A provider may finish work already
+submitted through Direct, but your app needs Vault for server-managed access
+after the browser closes.
+
+## Several providers
+
+Create a separate connection for each provider your app uses. A text
+connection can sit alongside connections for video and voice. If the same
+provider serves several models, those models can use that provider’s
+connection.
+
+For example, an app can use Anthropic in Vault for text and fal in Vault for
+video and voice. Each provider’s Vault connection has its own Vault App key,
+Vault cap and revoke control. Video and voice using the same fal Vault App
+key share its Vault cap.
+
+Keep each Vault connection associated with its provider when saving,
+refreshing and using it. Revoking the fal Vault connection does not revoke
+the Anthropic Vault connection.
+
+You can also offer a Direct connection, such as Replicate, alongside Vault.
+Each Direct API key stays in the browser. Direct does not get Vault caps or
+Outlet’s Vault revoke control. The user removes Direct access on the
+provider’s website.
 
 ## What your app never sees (vault mode)
 
