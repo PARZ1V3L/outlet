@@ -84,6 +84,12 @@ Outlet returns a short-lived session to the app:
   app-side encrypted storage. The grant_id — not the key — is the durable
   reference; apps re-fetch keys via `Outlet.refresh(grant_id)`.
 - Grant screen mirrors OAuth consent UX: name, icon, scopes, cap, revoke note.
+- Approval is a claim on the grant (2026-09-22). The vault provisions the
+  key at the provider first, then flips the grant out of `pending` in one
+  guarded write. Of two approvals at once (two tabs, a double press), one is
+  recorded; the other ends the key it minted with its own references and
+  answers 409 with the grant's state. The guided key step (§5.1) claims the
+  same way from `awaiting_key`.
 
 ### 3.3 Use (app ↔ provider, every request)
 
@@ -100,6 +106,20 @@ not involved. Zero added latency, zero data exposure.
     action or new billing period.
 - A usage reading in a currency other than USD stops the grant
   (`reason: "currency"`, §7).
+- The reading is held against the cap the connection has when the reading
+  is in hand, read fresh from the grant before any kill (2026-09-22). A cap
+  raised above the reading while the read was in flight means no kill on
+  that tick. A cap lowered under it ends the key on that tick, at the new
+  number. A connection revoked, capped, or moved to a new key while the read
+  was in flight is left as it is; the next tick reads it afresh. What can
+  still be missed is a change that lands while the provider is ending the
+  key.
+- A lowered cap is held from the meter's next read. A resumed grant's
+  reading (§3.7) is the new key's usage plus what its ended keys spent in
+  the same UTC month.
+- At 100%, a provider whose key can be stopped without being ended
+  (OpenRouter's `disabled`) has the key disabled and kept, so a raised cap
+  can reopen it. Everywhere else the key is ended.
 
 ### 3.5 Revoke (user → Outlet → provider)
 
@@ -116,6 +136,23 @@ credential. The confirm step states what will happen before acting
 connections."). If the provider call fails, the credential stays in
 place and no connection is orphaned. The user retries.
 
+### 3.7 Cap edit and resume (user → Outlet → provider)
+
+`POST /v0/grants/{id}/cap` (user session, human check, §6.3). Body
+`{ cap_usd }`: a finite number of US dollars, 1 or more, two decimals at
+most, no maximum. 400 before any state changes. The grant's owner only. Up
+or down, any time. The stored cap becomes the new number. A grant capped
+for `"spend"` resumes when the new cap is above the month's spend. A grant
+capped for `"unreadable"` or `"currency"` stores the number and stays
+capped.
+
+The provider is called first, then the row, then the trail: a provider that
+refuses changes nothing. Where the provider holds a limit of its own on a
+live key, that limit moves first (§5). A resume reopens the same key where
+the provider kept it (OpenRouter) and is a second provision everywhere
+else: a new key on OpenAI and fal, a new workspace and the key step on
+Anthropic. The month's spend so far is carried onto the new key (§3.4).
+
 ## 4. The account portal
 
 The consumer surface, at useoutlet.dev/account. It shows:
@@ -127,7 +164,7 @@ The consumer surface, at useoutlet.dev/account. It shows:
 - Disconnect per provider account (§3.6)
 - account deletion with a typed confirm
 
-Roadmap, not in v1: cap editing and spend alerts.
+Roadmap, not in v1: spend alerts.
 
 ## 5. Provider adapter requirements
 
@@ -135,17 +172,26 @@ Each adapter implements: `provision(grant) → key` (or, for guided-flow
 providers whose consoles refuse programmatic key creation, `provision(grant)
 → pending` followed by `verifyKey(pasted key) → refs` once the user creates
 the key by hand — §5.1 is the defining case), `usage(key) → spend`,
-`revoke(key)`. Caps are enforced by the vault's meter (§3.4), not by a
-per-adapter `setCap`: provider-side budgets were verified advisory (§5.2)
-or Console-only (§5.1), so a cap primitive adapters can't honestly
-implement was removed from the contract (2026-06-12).
+`revoke(key)`. Caps are enforced by the vault's meter (§3.4); provider-side
+budgets were verified advisory (§5.2) or Console-only (§5.1), so no adapter
+holds the cap alone. Two optional primitives (2026-09-18): `setCap`, for a
+provider that holds a limit of its own behind the cap (OpenAI's project
+budget and rate limits, OpenRouter's key limit), moves that limit to the
+new cap on the same key, takes `previousCapUsd` and `reopen`, answers
+`{ providerStatus }`, and MUST throw when the provider refuses so the caller
+changes nothing. `disable`, for a provider whose key can be stopped without
+being ended (OpenRouter's `disabled`), is what the meter's spend cap calls
+in place of `revoke`, so a raised cap can reopen the same key. `provision`
+may answer `providerStatus`. A provider without `setCap` (Anthropic, fal)
+has no limit of its own to move: its cap is the meter alone.
 
 | Priority | Provider | Provisioning primitive | Cap mechanism | Notes |
 |---|---|---|---|---|
-| **1** | OpenAI | Admin API projects + service accounts — **zero manual steps, raw key returned** | **Outlet meter + revoke** (budgets verified advisory) + programmatic rate limits + advisory budget | Probed 🟢 — see §5.2 |
-| **2** | Anthropic | Admin API workspaces (programmatic) + **guided Console step for key creation** | Outlet-enforced: cost API polling + key deactivation (Console caps are manual) | Probed 🟡 — see §5.1 |
+| **1** | OpenAI | Admin API projects + service accounts — **zero manual steps, raw key returned** | **Outlet meter + revoke** (budgets verified advisory) + programmatic rate limits + advisory budget. A cap edit re-applies the project budget and the capToRpm rate limits on the same project. A resume is a second provision (a new project and key). | Probed 🟢 — see §5.2 |
+| **2** | Anthropic | Admin API workspaces (programmatic) + **guided Console step for key creation** | Outlet-enforced: cost API polling + key deactivation (Console caps are manual). A cap edit sends nothing. A resume is a new workspace and a key made by hand, through the same key step as approval. | Probed 🟡 — see §5.1 |
 | 3 | Google | Cloud projects + Gemini keys | Quotas + budget alerts → auto-revoke | Fast follow; needs its own probe |
-| 4 | fal (a model host: it serves other makers' image, video and audio models) | Platform API keys: `POST /keys` with an ADMIN key, zero manual steps, raw key returned once | Outlet meter + key deletion only. fal has no per-key budget and no per-key rate limit, so the provision-time rate limit (capToRpm, 5.2) does not apply. | Built from fal's reference 2026-09-17, not probed |
+| 4 | fal (a model host: it serves other makers' image, video and audio models) | Platform API keys: `POST /keys` with an ADMIN key, zero manual steps, raw key returned once | Outlet meter + key deletion only. fal has no per-key budget and no per-key rate limit, so the provision-time rate limit (capToRpm, 5.2) does not apply. A cap edit sends nothing. A resume is a second key. | Built from fal's reference 2026-09-17, not probed |
+| 5 | OpenRouter (a model host: it serves many makers' language models under one account) | Management API keys: `POST /keys` with a management key, a monthly `limit` on the key, raw key returned once | OpenRouter's monthly limit on the key, plus the Outlet meter, which disables the key at 100% and keeps it. A cap edit moves the key's limit. A resume reopens the same key under the new limit, in one call. | Built from OpenRouter's reference 2026-09-18, not probed |
 
 A provider's kind is `maker` (it serves its own models) or `host` (it serves
 other makers' models).
@@ -279,9 +325,15 @@ rejections. Design consequences:
 - Audit log of every provision, refresh and revoke. Append-only and
   write-only in v0. Recorded: every credential store, decrypt, delivery,
   revoke, cap kill, allowlist change, user-side revoke, provider
-  disconnect and account deletion. A user-visible read surface is
-  roadmap. The shipped portal shows each connection's dates and state,
-  not the raw log.
+  disconnect and account deletion. Since 2026-09-22 also the cap edit,
+  `cap_changed { capUsd, previousCapUsd, providerStatus? }`; the resume,
+  `grant_resumed { capUsd, spendUsd, via, awaitingKey?, providerStatus? }`;
+  and the approval that lost its claim (§3.2), `approval_lost { step:
+  approve | key, capUsd?, providerRevoked?, providerStatus?, error? }`.
+  `grant_capped` gains `carriedUsd` when a carry counted, and its `capUsd`
+  is the cap held at the kill, not the one read at the start of the tick.
+  A user-visible read surface is roadmap. The shipped portal shows each
+  connection's dates and state, not the raw log.
 - Open spec, private vault (ADR 0002): the protocol is public and anyone may
   implement it; Outlet's vault implementation is closed. Trust is built via
   this spec, public security documentation, third-party review before GA.
@@ -443,6 +495,11 @@ interval (~5 min) stale, and `0` for a grant the meter has not yet read.
 `reason` says why a capped grant stopped: `"spend"` (its monthly cap),
 `"unreadable"` (the meter could not read the provider's usage for an hour)
 or `"currency"` (§3.4). A grant in any other status carries no `reason`.
+
+A capped connection becomes active again when its owner raises the cap
+above the month's spend (§3.7). After that, call `refresh()`: on OpenAI,
+Anthropic and fal the key is a NEW key; on OpenRouter it is the same key,
+reopened. An app MUST NOT keep a key past a `capped` status.
 
 Wire protocol: plain HTTPS + JSON; OAuth 2.1-style grant screen; PKCE for
 public clients (§7.1). Full endpoint schema in `openapi.yaml` (TODO).
