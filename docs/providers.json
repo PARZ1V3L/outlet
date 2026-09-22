@@ -298,7 +298,7 @@
       "modes": {
         "direct": true,
         "button": true,
-        "vault": false
+        "vault": true
       },
       "checks": [
         {
@@ -306,6 +306,12 @@
           "how": "docs",
           "date": "2026-09-18",
           "source": "https://openrouter.ai/docs/api_reference/authentication"
+        },
+        {
+          "mode": "vault",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://openrouter.ai/docs/api/api-reference/api-keys/create-a-new-api-key"
         }
       ]
     },

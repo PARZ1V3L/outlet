@@ -180,8 +180,11 @@ export const providers: readonly ProviderEntry[] = [
     createAction: CREATE,
     formatHint: "Your OpenRouter Direct API key starts with sk-or-v1-.",
     keyShape: starts("sk-or-v1-", "example", "https://openrouter.ai/docs/api/api-reference/api-keys/create-a-new-api-key"),
-    openaiCompatible: true, modes: DIRECT,
-    checks: [docs("direct", "https://openrouter.ai/docs/api_reference/authentication")],
+    openaiCompatible: true, modes: DIRECT_AND_VAULT,
+    checks: [
+      docs("direct", "https://openrouter.ai/docs/api_reference/authentication"),
+      docs("vault", "https://openrouter.ai/docs/api/api-reference/api-keys/create-a-new-api-key"),
+    ],
   },
   {
     id: "groq", displayName: "Groq", kind: "host",

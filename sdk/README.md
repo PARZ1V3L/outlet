@@ -37,11 +37,11 @@ App ID: <from your Vault invite>
 Return address: <the https or private-scheme return address>
 Local testing: http://localhost/outlet/return, any port
 Button: import { mountConnectButton } from "@useoutlet/sdk/ui".
-Mount on an empty div with mode: "both", appId and redirectUri.
+Mount on an empty div with mode: "both", providers, appId and redirectUri.
 Vault return: pass Outlet.handleRedirect() as session only when the return address has code and state.
 Receive the Direct or Vault session through onSession.
 No app secret in the app.
-Vault provider: choose openai, anthropic or fal. Use a separate Vault connection request for each provider.
+Vault provider: choose openai, anthropic, fal or openrouter. Use a separate Vault connection request for each provider.
 Place the Connect your AI button where users connect their AI account.
 After connect: call the provider with its official SDK using session.keys.<provider>.
 ```

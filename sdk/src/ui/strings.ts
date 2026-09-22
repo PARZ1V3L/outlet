@@ -218,6 +218,28 @@ export const vaultExplain: Record<string, VaultExplainStrings> = {
     fineInView: true,
     continue: "Continue to Outlet",
   },
+  // OpenRouter holds the monthly cap on the key itself, and at the cap the
+  // key is paused and kept, so its cap line stays in view too: the person
+  // reads how to continue before approving. Wording: Parz's word pass,
+  // 2026-09-22. The header is the shared "Vault · {provider}".
+  openrouter: {
+    title: "Connect your account",
+    intro: [
+      "Add your OpenRouter Vault management key on useoutlet.dev.",
+      "On OpenRouter, create a management key named Outlet for Vault.",
+      "Outlet uses your Vault management key to create and manage this app’s Vault App key.",
+      "Your Vault management key is never given to apps.",
+    ],
+    details: "Vault access and caps",
+    lines: [
+      "This app gets its own Vault App key in your OpenRouter account.",
+      "Outlet reads this Vault App key’s monthly spending from OpenRouter.",
+      "Revoking Vault access disables this app’s Vault App key, then deletes it.",
+    ],
+    fine: "OpenRouter holds your monthly Vault cap on this app’s Vault App key. At the Vault cap, the Vault App key is paused and kept. Raise the Vault cap to continue.",
+    fineInView: true,
+    continue: "Continue to Outlet",
+  },
 };
 
 /** The Vault screens after the explanation, the same for every provider. */

@@ -18,7 +18,9 @@ afterEach(() => {
 
 const header = () => sheet().querySelector(".brand")?.textContent;
 const vaultOptions = { appId: "app_test", redirectUri: "https://app.example/outlet/return", onSession() {} };
-const EXPLAIN: Record<string, string> = { openai: "vault-only", anthropic: "vault-anthropic-only", fal: "vault-fal-only" };
+const EXPLAIN: Record<string, string> = {
+  openai: "vault-only", anthropic: "vault-anthropic-only", openrouter: "vault-openrouter-only", fal: "vault-fal-only",
+};
 
 describe("Vault gating by modes.vault", () => {
   it.each(providers.map((p) => [p.id, p] as const))("%s alone in Vault mode", (id, p) => {
@@ -43,7 +45,9 @@ describe("Vault gating by modes.vault", () => {
       throw new Error("expected a throw");
     } catch (e) {
       expect((e as OutletError).code).toBe("ui_no_vault_provider");
-      expect((e as OutletError).message).toContain("openai, anthropic, fal");
+      expect((e as OutletError).message).toBe(
+        "Vault needs one of these in providers: openai, anthropic, openrouter, fal.",
+      );
     }
   });
 
@@ -97,6 +101,48 @@ describe("fal in Vault", () => {
     expect(own(true)[0]!.classList.contains("fine-in-view")).toBe(true);
     expect(sheet().textContent).not.toContain("API-scope");
     expect(Array.from(sheet().querySelectorAll(".actions button"), (b) => b.textContent)).toEqual(["Continue to Outlet"]);
+  });
+
+  it("explains OpenRouter with OpenRouter's words, the cap line in view without opening the detail", () => {
+    const m = mount({ providers: ["openrouter"] });
+    m.handle.open();
+    click("Vault");
+    expect(state()).toBe("vault-openrouter-explain");
+    expect(header()).toBe("Vault · OpenRouter");
+    expect(heading()).toBe("Connect your account");
+    const body = sheet().querySelector(".sheet-body") as HTMLElement;
+    const own = (cls: boolean) => Array.from(body.children).filter((el) => el.tagName === "P" && el.classList.contains("fine") === cls);
+    expect(own(false).map((p) => p.textContent)).toEqual([
+      "Add your OpenRouter Vault management key on useoutlet.dev.",
+      "On OpenRouter, create a management key named Outlet for Vault.",
+      "Outlet uses your Vault management key to create and manage this app’s Vault App key.",
+      "Your Vault management key is never given to apps.",
+    ]);
+    const details = body.querySelector("details.vault-details") as HTMLDetailsElement;
+    expect(details.querySelector("summary")?.textContent).toBe("Vault access and caps");
+    expect(Array.from(details.querySelectorAll("li"), (li) => li.textContent)).toEqual([
+      "This app gets its own Vault App key in your OpenRouter account.",
+      "Outlet reads this Vault App key’s monthly spending from OpenRouter.",
+      "Revoking Vault access disables this app’s Vault App key, then deletes it.",
+    ]);
+    const cap = "OpenRouter holds your monthly Vault cap on this app’s Vault App key. At the Vault cap, the Vault App key is paused and kept. Raise the Vault cap to continue.";
+    expect(details.textContent).not.toContain(cap);
+    expect(own(true).map((p) => p.textContent)).toEqual([cap]);
+    expect(own(true)[0]!.classList.contains("fine-in-view")).toBe(true);
+    expect(sheet().textContent).not.toContain("admin key");
+    expect(Array.from(sheet().querySelectorAll(".actions button"), (b) => b.textContent)).toEqual(["Continue to Outlet"]);
+  });
+
+  it("the OpenRouter return page: checking, then Connected to OpenRouter, under OpenRouter's header", async () => {
+    const d = deferred<OutletSession>();
+    const m = mount({ mode: "vault", providers: ["openrouter"], session: d.promise });
+    expect(state()).toBe("vault-openrouter-return-checking");
+    expect(header()).toBe("Vault · OpenRouter");
+    d.resolve({ grantId: "grant_1", keys: { openrouter: "sk-or-v1-fixture" }, capUsd: 5, expiresAt: "2026-10-01T00:00:00Z", mode: "vault" });
+    await flush();
+    expect(state()).toBe("vault-openrouter-connected");
+    expect(heading()).toBe("Connected to OpenRouter");
+    expect(trigger(m.target).getAttribute("aria-label")).toBe("Connected to OpenRouter in Vault");
   });
 
   it("OpenAI and Anthropic keep their cap line inside the detail", () => {

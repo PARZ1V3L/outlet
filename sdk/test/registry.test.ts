@@ -37,10 +37,10 @@ describe("the provider registry", () => {
     expect(providers.slice(10).every((p) => p.kind === "host")).toBe(true);
   });
 
-  it("offers Direct and a named screen everywhere, Vault for OpenAI, Anthropic and fal alone", () => {
+  it("offers Direct and a named screen everywhere, Vault for OpenAI, Anthropic, OpenRouter and fal alone", () => {
     expect(providerIds("direct")).toEqual(IDS);
     expect(providerIds("button")).toEqual(IDS);
-    expect(providerIds("vault")).toEqual(["openai", "anthropic", "fal"]);
+    expect(providerIds("vault")).toEqual(["openai", "anthropic", "openrouter", "fal"]);
   });
 
   it("marks every provider OpenAI-compatible except fal, Replicate and Higgsfield", () => {

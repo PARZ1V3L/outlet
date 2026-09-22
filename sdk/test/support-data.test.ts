@@ -12,9 +12,9 @@ describe("the support data written from the registry", () => {
     expect(JSON.parse(read("docs/providers.json"))).toEqual({ providers: JSON.parse(JSON.stringify(providers)) });
   });
 
-  it("the README's Vault provider line names the registry's Vault providers", () => {
-    const ids = providerIds("vault");
-    const list = `${ids.slice(0, -1).join(", ")} or ${ids[ids.length - 1]}`;
-    expect(read("sdk/README.md")).toContain(`Vault provider: choose ${list}.`);
+  it("the README's Vault provider line names the registry's Vault providers, in the passed order", () => {
+    const list = read("sdk/README.md").match(/^Vault provider: choose (.+?)\. Use a separate/m)?.[1] ?? "";
+    expect(list).toBe("openai, anthropic, fal or openrouter");
+    expect(list.split(/, | or /).sort()).toEqual([...providerIds("vault")].sort());
   });
 });
