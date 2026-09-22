@@ -1,5 +1,7 @@
 # Changelog (@useoutlet/sdk)
 
+0.6.1: OpenRouter joins OpenAI, Anthropic and fal in Vault: the Connect your AI button offers its Vault door with OpenRouter's own words, and `providerIds("vault")` and `providers.json` say so. The README's AI prompt names `providers`. The spec gains the cap edit and its resume, the approve claim, the meter's fresh read, and the audit actions that go with them.
+
 0.6.0: a provider registry of nineteen, each with a named Direct screen in the Connect your AI button. Any other provider gets the generic Direct screen from the name and keys page your app supplies. fal joins OpenAI and Anthropic in Vault. The button shows `google` as Gemini. `providers`, `getProvider()` and `providerIds()` ship in the package, with the same data as `@useoutlet/sdk/providers.json`. `direct()` still takes any provider's key whole and refuses what it refused before. `GrantInfo` gains `reason`. The README gains media apps, background jobs and several providers, and the spec the rows that go with them.
 
 0.5.2: Direct API key and Vault admin key wording in the Connect your AI button, and the README and spec lines that go with it.
