@@ -19,21 +19,21 @@ keys, one per app.** Never their raw credentials. Your app calls the provider
 directly with the official SDK. Outlet is **never in the data path**.
 
 > Status: **direct mode works today** (validated bring-your-own-key, no
-> server). Vault mode (capped, revocable App keys) is in early access.
-> Registration is by invite. Get one at useoutlet.dev.
+> server). Vault mode (capped, revocable App keys) is open.
+> Register your app at useoutlet.dev/register.
 > The same session in both modes. Protocol docs at [useoutlet.dev](https://useoutlet.dev).
 > Feedback welcome.
 
-## Have a Vault invite? Paste this into your AI.
+## Building with an AI? Paste this into your AI.
 
 Your AI adds the Connect your AI button for you. The same button can offer
-Direct, Vault or both. Your Vault invite brings the app ID.
+Direct, Vault or both. Register your app at useoutlet.dev/register for the app ID.
 
 ```text
 Add Outlet to this app so users can connect their own AI account.
 Read https://useoutlet.dev/llms-full.txt first.
 Install: npm install @useoutlet/sdk
-App ID: <from your Vault invite>
+App ID: <from useoutlet.dev/register>
 Return address: <the https or private-scheme return address>
 Local testing: http://localhost/outlet/return, any port
 Button: import { mountConnectButton } from "@useoutlet/sdk/ui".
@@ -91,13 +91,13 @@ OpenAI, Anthropic, and Google get strict key-format checks (mix-ups caught,
 admin keys refused); other providers are accepted with the same admin-key
 safety check, since their key formats vary.
 
-## Vault mode (the same session, in early access)
+## Vault mode (the same session)
 
 Same session shape. The pasted key becomes an App key: provisioned inside the
 user's own account for your app alone, capped, and revocable.
 
 ```ts
-// NOTE: vault mode is by invite during early access. Your invite brings your app_id: useoutlet.dev
+// NOTE: register your app at useoutlet.dev/register to get your app_id.
 //
 // 1. user clicks [ Connect your AI ], which opens the Outlet grant screen
 const session = await Outlet.connect({
@@ -265,9 +265,8 @@ provider’s website.
 - Other apps' keys or spend
 - Anything after revocation. A revoked grant stops working
 
-Direct mode is the bridge while vault mode is in early access. The user's own
-key, in your app, by their choice. Validated, never an admin credential. The
-same API you keep when you upgrade to vault mode.
+The user's own key, in your app, by their choice. Validated, never an admin
+credential. The same API you keep when you upgrade to vault mode.
 
 ## What Outlet never does
 
