@@ -1,0 +1,4 @@
+# Outlet docs fixture
+
+Not the docs. The MCP server test points OUTLET_DOCS_URL at this file, so
+outlet_docs answers with these lines and the test touches no network.

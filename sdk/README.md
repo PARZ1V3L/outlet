@@ -38,6 +38,7 @@ Return address: <the https or private-scheme return address>
 Local testing: http://localhost/outlet/return, any port
 Button: import { mountConnectButton } from "@useoutlet/sdk/ui".
 Mount on an empty div with mode: "both", providers, appId and redirectUri.
+React or Vue: use useConnectButton from "@useoutlet/sdk/react" or "@useoutlet/sdk/vue".
 Vault return: pass Outlet.handleRedirect() as session only when the return address has code and state.
 Receive the Direct or Vault session through onSession.
 No app secret in the app.
