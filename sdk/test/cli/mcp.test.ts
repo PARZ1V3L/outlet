@@ -50,9 +50,12 @@ class Client {
   raw(line: string): void {
     this.child.stdin!.write(line + "\n");
   }
+  /** Closes stdin and resolves with the exit code once the server's stdout and stderr have drained. */
   close(): Promise<number | null> {
     return new Promise((resolve) => {
-      this.child.on("exit", resolve);
+      let code: number | null = null;
+      this.child.on("exit", (c) => { code = c; });
+      this.child.on("close", () => resolve(code));
       this.child.stdin!.end();
     });
   }
@@ -166,7 +169,8 @@ describe("the 2026-07-28 revision", () => {
     const c = start({ OUTLET_DOCS_URL: url });
     const docs = await c.request("tools/call", modern({ name: "outlet_docs", arguments: {} }));
     expect(docs.result).toEqual({ resultType: "complete", content: [{ type: "text", text: `The Outlet docs could not be fetched from ${url}.` }], isError: true, _meta: SERVER_INFO });
-    await c.close();
+    expect(await c.close()).toBe(0);
+    expect(c.stderr.join("")).toContain(`the docs could not be fetched from ${url}`);
   });
 
   it("missing clientCapabilities, a version that is not a string, an unsupported version, an unknown method and an unknown tool are errors", async () => {
@@ -180,8 +184,9 @@ describe("the 2026-07-28 revision", () => {
     expect((await c.request("resources/list", modern())).error).toEqual({ code: -32601, message: "Method not found: resources/list" });
     expect((await c.request("initialize", modern({ protocolVersion: "2025-06-18", capabilities: {} }))).error?.code).toBe(-32601);
     expect((await c.request("tools/call", modern({ name: "outlet_secrets" }))).error).toEqual({ code: -32602, message: "Unknown tool: outlet_secrets" });
+    expect((await c.request("tools/call", modern())).error).toEqual({ code: -32602, message: "Invalid params: name" });
     await c.close();
-    expect(c.received).toHaveLength(7);
+    expect(c.received).toHaveLength(8);
   });
 
   it("a modern notification gets no reply", async () => {
@@ -194,20 +199,23 @@ describe("the 2026-07-28 revision", () => {
 });
 
 describe("both eras on one process", () => {
-  it("initialize, then a modern tools/list, a legacy tools/list and a modern server/discover", async () => {
+  it("initialize, then a modern tools/list, legacy tools/lists with and without a _meta, and a modern server/discover", async () => {
     const c = start();
     const init = await c.request("initialize", { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "test", version: "0" } });
     expect(init.result).toEqual({ protocolVersion: "2025-11-25", capabilities: { tools: {} }, serverInfo: { name: "outlet", version: pkg.version } });
     c.raw(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }));
     expect((await c.request("tools/list", modern())).result).toEqual({ resultType: "complete", tools: TOOLS, _meta: SERVER_INFO, ...CACHE });
     expect((await c.request("tools/list")).result).toEqual({ tools: TOOLS });
+    // the era rule's other side: a _meta without the version key, or one that is not an object, is legacy
+    expect((await c.request("tools/list", { _meta: { progressToken: "t", [META.capabilities]: {} } })).result).toEqual({ tools: TOOLS });
+    expect((await c.request("tools/list", { _meta: "x" })).result).toEqual({ tools: TOOLS });
     expect((await c.request("server/discover", modern())).result).toEqual({
       resultType: "complete", supportedVersions: ["2026-07-28"], capabilities: { tools: {} }, _meta: SERVER_INFO, instructions: INSTRUCTIONS, ...CACHE,
     });
     expect((await c.request("server/discover")).error?.code).toBe(-32601);
     expect(await c.close()).toBe(0);
     expect(c.stderr.join("")).toBe("");
-    expect(c.received).toHaveLength(5);
+    expect(c.received).toHaveLength(7);
   });
 
   it("a modern request first, then initialize, then a legacy call", async () => {
