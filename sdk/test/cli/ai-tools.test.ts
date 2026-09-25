@@ -57,9 +57,13 @@ describe("ai-tools/", () => {
     expect(marketplace.plugins[0]).toMatchObject({ name: "outlet", source: "./ai-tools/claude-code" });
   });
 
-  it("ai-tools/README.md gives the install commands", () => {
+  it("the two READMEs give the same install commands", () => {
     const tools = read("ai-tools/README.md");
+    const sdk = read("sdk/README.md");
     expect(tools.startsWith("Three ways to hand your AI tool Outlet's docs.\n")).toBe(true);
-    for (const command of COMMANDS) expect(tools).toContain(command);
+    for (const command of COMMANDS) {
+      expect(tools).toContain(command);
+      expect(sdk).toContain(command);
+    }
   });
 });

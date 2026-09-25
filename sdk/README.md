@@ -47,6 +47,39 @@ Place the Connect your AI button where users connect their AI account.
 After connect: call the provider with its official SDK using session.keys.<provider>.
 ```
 
+### Give your AI tool the docs
+
+Claude Code: install the Outlet plugin. It adds the /outlet:add-outlet skill.
+
+```sh
+claude plugin marketplace add PARZ1V3L/outlet
+claude plugin install outlet@useoutlet
+```
+
+Any tool with MCP: run the docs server. It serves the current docs and the setup prompt.
+
+```sh
+claude mcp add outlet -- npx -y @useoutlet/sdk mcp
+```
+
+`.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "outlet": { "command": "npx", "args": ["-y", "@useoutlet/sdk", "mcp"] }
+  }
+}
+```
+
+Cursor: copy the rule file into .cursor/rules.
+
+```sh
+cp ai-tools/cursor/outlet.mdc .cursor/rules/outlet.mdc
+```
+
+[ai-tools/](https://github.com/PARZ1V3L/outlet/tree/main/ai-tools)
+
 ## Why
 
 - Users already pay for AI. They shouldn't pay again inside every app.

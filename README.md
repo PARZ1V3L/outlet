@@ -12,6 +12,7 @@ is never in the data path.
 - **Protocol:** [spec/SPEC.md](spec/SPEC.md). CC-BY-4.0.
 - **Phone apps:** [examples/phones/](examples/phones/). iPhone, Android, React Native.
 - **React and Vue:** `@useoutlet/sdk/react` and `@useoutlet/sdk/vue`. Examples in [examples/react/](examples/react/) and [examples/vue/](examples/vue/).
+- **AI coding tools:** a Claude Code plugin, a Cursor rule and an MCP docs server. See [ai-tools/](ai-tools/).
 - **Docs:** [useoutlet.dev/docs](https://useoutlet.dev/docs/)
 - **Vault invites:** registration is by invite during early access. Direct mode needs none. [useoutlet.dev](https://useoutlet.dev)
 - **Security:** [SECURITY.md](SECURITY.md). security@useoutlet.dev
