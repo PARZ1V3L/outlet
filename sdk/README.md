@@ -58,6 +58,12 @@ After connect: call the provider with its official SDK using session.keys.<provi
 npm install @useoutlet/sdk
 ```
 
+No build step? Import the button from a CDN:
+
+```js
+import { mountConnectButton } from "https://esm.sh/@useoutlet/sdk/ui";
+```
+
 ## Usage today (direct mode)
 
 Your user pastes their own API key; the SDK validates it locally (catches
@@ -90,6 +96,51 @@ const ai = new OpenAI({
 OpenAI, Anthropic, and Google get strict key-format checks (mix-ups caught,
 admin keys refused); other providers are accepted with the same admin-key
 safety check, since their key formats vary.
+
+## React and Vue
+
+The button comes as a React hook and a Vue composable.
+
+```ts
+import { useConnectButton } from "@useoutlet/sdk/react";
+import { useConnectButton } from "@useoutlet/sdk/vue";
+```
+
+Both take the same options as mountConnectButton and clean up on unmount.
+
+```tsx
+import { useConnectButton } from "@useoutlet/sdk/react";
+
+function Connect() {
+  const { ref } = useConnectButton({
+    mode: "both",
+    providers: ["openai"],
+    appId: "app_yourapp",
+    redirectUri: "https://yourapp.com/outlet/return",
+    onSession: (session) => { ai = new OpenAI({ apiKey: session.keys.openai }); },
+  });
+  return <div ref={ref} />;
+}
+// In Next.js, mount the button in a client component.
+```
+
+```vue
+<script setup lang="ts">
+import { useConnectButton } from "@useoutlet/sdk/vue";
+
+const { target } = useConnectButton({
+  mode: "both",
+  providers: ["openai"],
+  appId: "app_yourapp",
+  redirectUri: "https://yourapp.com/outlet/return",
+  onSession: (session) => { ai = new OpenAI({ apiKey: session.keys.openai }); },
+});
+</script>
+
+<template>
+  <div ref="target"></div>
+</template>
+```
 
 ## Vault mode (the same session)
 
