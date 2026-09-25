@@ -1,0 +1,15 @@
+{
+  "name": "useoutlet",
+  "description": "Outlet for AI coding tools",
+  "owner": {
+    "name": "Outlet",
+    "email": "hello@useoutlet.dev"
+  },
+  "plugins": [
+    {
+      "name": "outlet",
+      "source": "./ai-tools/claude-code",
+      "description": "Add the Connect your AI button from Outlet to a web app. Direct: the user pastes their own API key. Vault: the user connects an account with an admin key. Use when asked to add Outlet or to let users use their own OpenAI, Anthropic, fal or OpenRouter account."
+    }
+  ]
+}
