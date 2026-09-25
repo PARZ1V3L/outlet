@@ -20,16 +20,19 @@ beforeAll(() => {
   execFileSync(process.execPath, [tsc], { cwd: sdk, stdio: "inherit" });
 }, 90_000);
 
-type Reply = { id: unknown; result?: any; error?: { code: number; message: string } };
+type Reply = { raw: string; id: unknown; result?: any; error?: { code: number; message: string; data?: unknown } };
 
 /** A client of one spawned server: requests by id, the reply as a promise. */
 class Client {
   private next = 1;
   private waiting = new Map<unknown, (reply: Reply) => void>();
   readonly stderr: string[] = [];
+  /** Every line the server wrote to stdout. */
+  readonly received: string[] = [];
   constructor(private child: ChildProcess) {
     createInterface({ input: child.stdout! }).on("line", (line) => {
-      const reply = JSON.parse(line) as Reply;
+      this.received.push(line);
+      const reply = { ...(JSON.parse(line) as Omit<Reply, "raw">), raw: line };
       this.waiting.get(reply.id)?.(reply);
       this.waiting.delete(reply.id);
     });
@@ -58,6 +61,24 @@ class Client {
 const start = (env: Record<string, string> = {}): Client =>
   new Client(spawn(process.execPath, [bin, "mcp"], { env: { ...process.env, ...env }, stdio: ["pipe", "pipe", "pipe"] }));
 
+const TOOLS = [
+  { name: "outlet_docs", description: "The current Outlet docs in one file.", inputSchema: { type: "object", properties: {} } },
+  { name: "outlet_setup_prompt", description: "The setup prompt: how to add the Connect your AI button.", inputSchema: { type: "object", properties: {} } },
+];
+const META = {
+  version: "io.modelcontextprotocol/protocolVersion",
+  capabilities: "io.modelcontextprotocol/clientCapabilities",
+  serverInfo: "io.modelcontextprotocol/serverInfo",
+};
+const SERVER_INFO = { [META.serverInfo]: { name: "outlet", version: pkg.version } };
+const INSTRUCTIONS = "Outlet adds the Connect your AI button to a web app. Call outlet_docs for the docs and outlet_setup_prompt for the setup steps.";
+const CACHE = { ttlMs: 3_600_000, cacheScope: "public" };
+/** Params of a 2026-07-28 request: the method's own, plus the _meta every modern request carries. */
+const modern = (params: Record<string, unknown> = {}, meta: Record<string, unknown> = {}): Record<string, unknown> => ({
+  ...params,
+  _meta: { [META.version]: "2026-07-28", "io.modelcontextprotocol/clientInfo": { name: "test", version: "0" }, [META.capabilities]: {}, ...meta },
+});
+
 describe("npx @useoutlet/sdk mcp", () => {
   it("initialize, tools/list, both tools, an unknown method, ping, then a clean exit", async () => {
     const c = start({ OUTLET_DOCS_URL: pathToFileURL(fixture).href });
@@ -65,10 +86,7 @@ describe("npx @useoutlet/sdk mcp", () => {
     expect(init.result).toEqual({ protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "outlet", version: pkg.version } });
     c.raw(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }));
     const list = await c.request("tools/list");
-    expect(list.result.tools).toEqual([
-      { name: "outlet_docs", description: "The current Outlet docs in one file.", inputSchema: { type: "object", properties: {} } },
-      { name: "outlet_setup_prompt", description: "The setup prompt: how to add the Connect your AI button.", inputSchema: { type: "object", properties: {} } },
-    ]);
+    expect(list.result).toEqual({ tools: TOOLS });
     const prompt = await c.request("tools/call", { name: "outlet_setup_prompt", arguments: {} });
     expect(prompt.result).toEqual({ content: [{ type: "text", text: SETUP_PROMPT }] });
     const docs = await c.request("tools/call", { name: "outlet_docs", arguments: {} });
@@ -117,6 +135,88 @@ describe("npx @useoutlet/sdk mcp", () => {
     const bad = spawnSync(process.execPath, [bin, "serve"], { encoding: "utf8" });
     expect(bad.status).toBe(1);
     expect(bad.stderr).toBe(help.stdout);
+  });
+});
+
+describe("the 2026-07-28 revision", () => {
+  it("server/discover answers the DiscoverResult, byte for byte", async () => {
+    const c = start();
+    const d = await c.request("server/discover", modern());
+    expect(d.raw).toBe(JSON.stringify({ jsonrpc: "2.0", id: d.id, result: {
+      resultType: "complete", supportedVersions: ["2026-07-28"], capabilities: { tools: {} }, _meta: SERVER_INFO, instructions: INSTRUCTIONS, ...CACHE,
+    } }));
+    expect(await c.close()).toBe(0);
+    expect(c.stderr.join("")).toBe("");
+  });
+
+  it("tools/list and both tools carry resultType and serverInfo, with the same tools and content; ping is gone", async () => {
+    const c = start({ OUTLET_DOCS_URL: pathToFileURL(fixture).href });
+    expect((await c.request("tools/list", modern())).result).toEqual({ resultType: "complete", tools: TOOLS, _meta: SERVER_INFO, ...CACHE });
+    const prompt = await c.request("tools/call", modern({ name: "outlet_setup_prompt", arguments: {} }));
+    expect(prompt.result).toEqual({ resultType: "complete", content: [{ type: "text", text: SETUP_PROMPT }], _meta: SERVER_INFO });
+    const docs = await c.request("tools/call", modern({ name: "outlet_docs", arguments: {} }));
+    expect(docs.result).toEqual({ resultType: "complete", content: [{ type: "text", text: readFileSync(fixture, "utf8") }], _meta: SERVER_INFO });
+    expect((await c.request("ping", modern())).error).toEqual({ code: -32601, message: "Method not found: ping" });
+    expect(await c.close()).toBe(0);
+    expect(c.stderr.join("")).toBe("");
+  });
+
+  it("a failed docs fetch is the same isError result, with the modern fields", async () => {
+    const url = pathToFileURL(join(sdk, "test/cli/no-such-docs.txt")).href;
+    const c = start({ OUTLET_DOCS_URL: url });
+    const docs = await c.request("tools/call", modern({ name: "outlet_docs", arguments: {} }));
+    expect(docs.result).toEqual({ resultType: "complete", content: [{ type: "text", text: `The Outlet docs could not be fetched from ${url}.` }], isError: true, _meta: SERVER_INFO });
+    await c.close();
+  });
+
+  it("missing clientCapabilities, a version that is not a string, an unsupported version, an unknown method and an unknown tool are errors", async () => {
+    const c = start();
+    expect((await c.request("tools/list", modern({}, { [META.capabilities]: undefined }))).error).toEqual({ code: -32602, message: `Invalid params: ${META.capabilities}` });
+    expect((await c.request("tools/list", modern({}, { [META.version]: 7 }))).error).toEqual({ code: -32602, message: `Invalid params: ${META.version}` });
+    for (const requested of ["1900-01-01", "2025-11-25"]) {
+      expect((await c.request("server/discover", modern({}, { [META.version]: requested }))).error)
+        .toEqual({ code: -32022, message: "Unsupported protocol version", data: { supported: ["2026-07-28"], requested } });
+    }
+    expect((await c.request("resources/list", modern())).error).toEqual({ code: -32601, message: "Method not found: resources/list" });
+    expect((await c.request("initialize", modern({ protocolVersion: "2025-06-18", capabilities: {} }))).error?.code).toBe(-32601);
+    expect((await c.request("tools/call", modern({ name: "outlet_secrets" }))).error).toEqual({ code: -32602, message: "Unknown tool: outlet_secrets" });
+    await c.close();
+    expect(c.received).toHaveLength(7);
+  });
+
+  it("a modern notification gets no reply", async () => {
+    const c = start();
+    c.raw(JSON.stringify({ jsonrpc: "2.0", method: "notifications/cancelled", params: modern({ requestId: 1 }) }));
+    expect((await c.request("tools/list", modern())).result.resultType).toBe("complete");
+    await c.close();
+    expect(c.received).toHaveLength(1);
+  });
+});
+
+describe("both eras on one process", () => {
+  it("initialize, then a modern tools/list, a legacy tools/list and a modern server/discover", async () => {
+    const c = start();
+    const init = await c.request("initialize", { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "test", version: "0" } });
+    expect(init.result).toEqual({ protocolVersion: "2025-11-25", capabilities: { tools: {} }, serverInfo: { name: "outlet", version: pkg.version } });
+    c.raw(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }));
+    expect((await c.request("tools/list", modern())).result).toEqual({ resultType: "complete", tools: TOOLS, _meta: SERVER_INFO, ...CACHE });
+    expect((await c.request("tools/list")).result).toEqual({ tools: TOOLS });
+    expect((await c.request("server/discover", modern())).result).toEqual({
+      resultType: "complete", supportedVersions: ["2026-07-28"], capabilities: { tools: {} }, _meta: SERVER_INFO, instructions: INSTRUCTIONS, ...CACHE,
+    });
+    expect((await c.request("server/discover")).error?.code).toBe(-32601);
+    expect(await c.close()).toBe(0);
+    expect(c.stderr.join("")).toBe("");
+    expect(c.received).toHaveLength(5);
+  });
+
+  it("a modern request first, then initialize, then a legacy call", async () => {
+    const c = start();
+    expect((await c.request("server/discover", modern())).result.resultType).toBe("complete");
+    expect((await c.request("initialize", { protocolVersion: "2025-06-18", capabilities: {} })).result.protocolVersion).toBe("2025-06-18");
+    expect((await c.request("tools/call", { name: "outlet_setup_prompt", arguments: {} })).result).toEqual({ content: [{ type: "text", text: SETUP_PROMPT }] });
+    expect(await c.close()).toBe(0);
+    expect(c.stderr.join("")).toBe("");
   });
 });
 
