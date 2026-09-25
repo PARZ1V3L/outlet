@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connect your AI · @useoutlet/sdk/react demo</title>
+<!--
+  The Connect your AI button in React: one mount of the useConnectButton
+  hook from @useoutlet/sdk/react, mode both. Direct works for real (the key
+  is checked on this device, never sent). Vault shows the grant request it
+  would send with a placeholder app id and does not navigate: the import map
+  below swaps the SDK's redirect step for the connect-button demo's stub.
+  React comes from esm.sh, the SDK from ../../sdk/dist/ (build it first:
+  cd sdk && npm run build). No node_modules, no build step. Serve the repo
+  root and open /examples/react/.
+
+  In Next.js, mount the button in a client component.
+-->
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.3.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.3.0/client?deps=react@19.3.0",
+    "../../sdk/dist/pkce.js": "../connect-button/vault-stub.js"
+  }
+}
+</script>
+<style>
+  body { margin: 0; font: 15px/1.5 system-ui, sans-serif; color: #18181a; background: #f4f2ec; }
+  @media (prefers-color-scheme: dark) { body { color: #faf8f3; background: #111113; } }
+  main { max-width: 920px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 34px; letter-spacing: -.04em; margin: 0 0 6px; }
+  .lede { opacity: .7; margin: 0 0 32px; }
+  section { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 24px 0; border-top: 1px solid #8884; }
+  @media (min-width: 720px) { section { grid-template-columns: 300px 1fr; align-items: start; } }
+  h2 { font-size: 18px; margin: 0 0 4px; }
+  section p { margin: 0 0 12px; opacity: .75; font-size: 14px; }
+  pre { margin: 0; padding: 12px 14px; background: #18181a; color: #d6f436; border-radius: 10px; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 44px; }
+  label { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; margin-right: 16px; }
+</style>
+<main>
+  <h1>Connect your AI, in React</h1>
+  <p class="lede">One button, two doors. The <code>useConnectButton()</code> hook from <code>@useoutlet/sdk/react</code>, mode <code>both</code>.</p>
+  <div id="app"></div>
+</main>
+
+<script type="module">
+  import { Fragment, StrictMode, createElement as h, useEffect, useState } from "react";
+  import { createRoot } from "react-dom/client";
+  import { useConnectButton } from "../../sdk/dist/react/index.js";
+  import { lastRequest } from "../connect-button/vault-stub.js";
+
+  /** Print a session with every key masked: only its known prefix, then its length. */
+  function masked(session) {
+    const keys = {};
+    for (const [provider, key] of Object.entries(session.keys)) {
+      const head = ["sk-svcacct-", "sk-proj-", "sk-ant-", "sk-", "AIza"].find((p) => key.startsWith(p)) ?? "";
+      keys[provider] = head + "…" + ` (${key.length} chars)`;
+    }
+    return JSON.stringify({ ...session, keys, capUsd: session.capUsd === Infinity ? "Infinity" : session.capUsd }, null, 2);
+  }
+
+  /** The grant request the Vault stub recorded instead of leaving the page. */
+  function grantText(r) {
+    return "Grant URL it would open: https://useoutlet.dev/grant/<request id>, minted by the vault in answer to\n" +
+      "POST " + r.url + "\n" + JSON.stringify(r.body, null, 2) +
+      "\n\nThe SDK navigates this tab there. This demo stops here.";
+  }
+
+  function Demo() {
+    const [theme, setTheme] = useState("auto");
+    const [out, setOut] = useState("");
+    // A theme change mounts the button again; a new onSession does not.
+    const { ref } = useConnectButton({
+      mode: "both",
+      providers: ["anthropic", "openai"],
+      appId: "app_demo",
+      redirectUri: location.origin + location.pathname,
+      requestedCapUsd: 10,
+      theme,
+      onSession: (session) => setOut(masked(session)),
+      onError: (e) => console.warn("[outlet] onError", e),
+    });
+    useEffect(() => {
+      const show = () => setOut(grantText(lastRequest()));
+      document.addEventListener("outlet-demo-redirect", show);
+      return () => document.removeEventListener("outlet-demo-redirect", show);
+    }, []);
+    return h(Fragment, null,
+      h("p", null, ["auto", "light", "dark"].map((t) =>
+        h("label", { key: t },
+          h("input", { type: "radio", name: "theme", value: t, checked: theme === t, onChange: () => setTheme(t) }),
+          t))),
+      h("section", null,
+        h("div", null,
+          h("h2", null, "both"),
+          h("p", null, "Providers: Anthropic and OpenAI, app id app_demo. The Vault request names Anthropic, the first Vault-capable provider in the list. Paste a real Direct API key: it is checked here and handed to onSession, masked below."),
+          h("div", { ref })),
+        h("pre", { "aria-live": "polite" }, out)));
+  }
+
+  createRoot(document.getElementById("app")).render(h(StrictMode, null, h(Demo)));
+</script>
+</html>
