@@ -9,6 +9,7 @@ as a capped App key, revocable any time. Never a raw credential. Outlet
 is never in the data path.
 
 - **SDK:** `npm install @useoutlet/sdk`. Zero dependencies. MIT. See [sdk/](sdk/).
+- **Python servers:** `pip install useoutlet`, the same Vault calls in Python. See [sdk-python/README.md](sdk-python/README.md).
 - **Protocol:** [spec/SPEC.md](spec/SPEC.md). CC-BY-4.0.
 - **Phone apps:** [examples/phones/](examples/phones/). iPhone, Android, React Native.
 - **React and Vue:** `@useoutlet/sdk/react` and `@useoutlet/sdk/vue`. Examples in [examples/react/](examples/react/) and [examples/vue/](examples/vue/).
