@@ -1,5 +1,25 @@
 # Changelog (@useoutlet/sdk)
 
+## 0.6.3 (2026-09-26)
+
+### Added
+
+- `ConnectionEndedError`, one typed error for a connection that ends. `status()` and `refresh()` throw it when the user's Vault connection is paused at its cap, revoked or disconnected, or when its refresh token is gone. `reason` says which: `capped`, `revoked` or `expired`. `grantId` says which connection.
+- `wrapFetch()`, optional. Hand the provider's SDK the wrapped fetch. A provider answer of 401, 402, 403 or 429 becomes one `status()` check. An open connection gets the provider's answer back untouched. On a Direct session, a 401 is the provider refusing the Direct API key: the same error, with reason `refused`.
+- The Connect your AI button hears about the end and shows one screen with the one thing the user can do: Raise the Vault cap, Connect again, or Paste a new Direct API key. `onSession` receives the new session.
+- CI runs the README's quickstart as printed, in the runner's Chrome.
+- The Python SDK's first release, `useoutlet` 0.1.0, as a separate package. `pip install useoutlet` gives a Python server the same Vault calls: connect, wait, exchange, refresh, status and revoke, and `direct()`.
+
+### Fixed
+
+- `connect()` sends the app secret on every poll of the connection request. A confidential app's poll answered 401 before.
+- The `state_mismatch` message reads "State mismatch. Possible CSRF; aborting." in both packages. It carried an em dash.
+
+### Changed
+
+- `status()` on a capped or revoked Vault connection throws `ConnectionEndedError` instead of returning the `GrantInfo`. The vault's answer is on the error's `info`.
+- `refresh()` on a connection that ended throws `ConnectionEndedError`, code `connection_ended`, where it threw an `OutletError` with code `grant_capped`, `grant_revoked` or `unauthorized`.
+
 0.6.2: the Connect your AI button as a React hook and a Vue composable (@useoutlet/sdk/react, @useoutlet/sdk/vue), with an example of each. npx @useoutlet/sdk mcp, a dependency-free MCP docs server that serves the docs and the setup prompt and speaks both the 2026-07-28 revision and the initialize handshake. The Claude Code plugin and the Cursor rule under ai-tools/. The Direct paste screen can say where the app keeps the user's Direct API key. The docs server finishes its reply when a client closes the pipe early.
 
 0.6.1: OpenRouter joins OpenAI, Anthropic and fal in Vault: the Connect your AI button offers its Vault door with OpenRouter's own words, and `providerIds("vault")` and `providers.json` say so. The README's AI prompt names `providers`. The spec gains the cap edit and its resume, the approve claim, the meter's fresh read, and the audit actions that go with them.
