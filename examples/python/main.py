@@ -4,8 +4,8 @@ Connect your AI, from a Python server. One FastAPI app with two routes:
 URL. /outlet/return takes the code and state back on the return address and
 exchanges them for the session. This app is a public client (no app secret):
 the exchange carries the PKCE proof, and the session's refresh token
-authorizes refresh(), status() and revoke() later. The App key is shown
-masked. A real app hands it to the provider's official SDK.
+authorizes refresh(), status() and revoke() later. The Vault App key is
+shown masked. A real app hands it to the provider's official SDK.
 
     pip install useoutlet fastapi uvicorn
     OUTLET_APP_ID=app_yourapp uvicorn main:app --port 8000
@@ -62,7 +62,7 @@ def outlet_return(code: str = "", state: str = "") -> str:
     sessions[session.grant_id] = session
     keys = ", ".join(f"{provider}: {masked(key)}" for provider, key in session.keys.items())
     return (
-        f"<p>Connected. Grant {session.grant_id}, cap ${session.cap_usd:g} a month.</p>"
+        f"<p>Connected. Grant {session.grant_id}, Vault cap ${session.cap_usd:g} a month.</p>"
         f"<p>{keys}</p>"
         f'<p><a href="/status/{session.grant_id}">Check the connection</a></p>'
     )
@@ -74,4 +74,4 @@ def status(grant_id: str) -> str:
         info = outlet.status(grant_id)
     except ConnectionEndedError as e:
         return f"<p>This connection ended: {e.reason}.</p><p>{e.message}</p>"
-    return f"<p>{info.status}: ${info.spend_usd:g} of ${info.cap_usd:g} used this month.</p>"
+    return f"<p>{info.status}: ${info.spend_usd:g} of the ${info.cap_usd:g} Vault cap used this month.</p>"

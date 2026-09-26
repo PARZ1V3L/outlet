@@ -61,7 +61,7 @@ outlet = Outlet(app_id="app_yourapp", app_secret=os.environ["OUTLET_APP_SECRET"]
 
 # 1. Start a Vault connection request. Send the user to its grant URL.
 request = outlet.connect(providers=["openai"], requested_cap_usd=10)
-print("Approve the connection at", request.grant_url)
+print("Approve the Vault connection at", request.grant_url)
 
 # 2. Wait for the approval. The session holds the Vault App key.
 session = outlet.wait(request.id)
