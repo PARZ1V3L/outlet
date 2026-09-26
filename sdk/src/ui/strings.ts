@@ -110,6 +110,14 @@ export const providerWords: Record<string, ProviderWords> = {
   },
 };
 
+/** Where the app keeps the person's Direct API key: one line on the Direct
+ *  paste screen when the app sets directKeyStorage, by its value. Wording:
+ *  Parz's pass, 2026-09-22. */
+export const directKeyStorage = {
+  browser: "This app keeps your Direct API key in your browser.",
+  server: "This app keeps your Direct API key on its server.",
+};
+
 /** The generic Direct screen, for a provider the app describes. The app
  *  supplies the name and the keys page. No format check of that provider's
  *  own runs, so the screen claims none. */

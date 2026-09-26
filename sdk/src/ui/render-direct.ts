@@ -8,7 +8,7 @@ import {
   frame, heading, keyReassurance, message, paragraphs, primary, secondary,
 } from "./render-shell.js";
 import { fill, screenProvider } from "./screen-provider.js";
-import { choose, directErrors, providerList } from "./strings.js";
+import { choose, directErrors, directKeyStorage, providerList } from "./strings.js";
 import type { UiProvider } from "./types.js";
 
 /** The provider a Direct screen is about, and its words. */
@@ -115,6 +115,7 @@ export function renderPaste(view: View, cfg: Config, a: Actions): Rendered {
     ...(s.hint ? [h("p", { class: "field-hint", id: IDS.hint }, s.hint)] : []),
     h("p", { class: "error field-error", id: IDS.error, hidden: true }),
     keyReassurance(s.lines),
+    ...(cfg.directKeyStorage ? [h("p", { class: "key-storage" }, directKeyStorage[cfg.directKeyStorage])] : []),
     actions(save),
   );
   finish(sheet);

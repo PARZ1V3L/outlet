@@ -37,6 +37,10 @@ export interface ConnectButtonOptions {
   requestedCapUsd?: number;
   /** Vault: the API base URL (staging). Defaults to the production vault. */
   baseUrl?: string;
+  /** Direct: where your app keeps the person's Direct API key after the
+   *  paste, in their browser or on your server. When set, the Direct paste
+   *  screen says so in one line. Unset, the screen says nothing about it. */
+  directKeyStorage?: "browser" | "server";
   /** Receives the session once a connection completes. The button turns
    *  Connected only after this resolves; a throw shows the try-again
    *  state and hands nothing else over. */

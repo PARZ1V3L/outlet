@@ -142,6 +142,9 @@ import { useConnectButton } from "@useoutlet/sdk/vue";
 
 Both take the same options as mountConnectButton and clean up on unmount.
 
+Pass `directKeyStorage: "browser"` or `"server"` and the Direct paste screen
+says where your app keeps the person's Direct API key.
+
 ```tsx
 import { useConnectButton } from "@useoutlet/sdk/react";
 

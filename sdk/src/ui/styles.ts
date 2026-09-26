@@ -154,6 +154,7 @@ p.field-error{margin:12px 0 0;font-size:12px}
 .key-reassurance{list-style:none;display:grid;gap:9px;padding:0;margin:22px 0 0}
 .key-reassurance li{display:flex;align-items:center;gap:10px;padding:0;margin:0;color:var(--muted);font-size:12px;line-height:1.5}
 .key-reassurance svg{width:15px;height:15px;opacity:.8}
+p.key-storage{margin:14px 0 0;font-size:12px;line-height:1.5}
 
 /* Status wording and completion behavior stay unchanged. */
 .message{text-align:center;display:flex;flex-direction:column;justify-content:center;padding:8px 0 14px;min-height:206px}

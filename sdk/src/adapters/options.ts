@@ -12,7 +12,7 @@ import type { ConnectButtonOptions } from "../ui/types.js";
  * it. The two handlers are not part of the key: see currentOptions().
  */
 export function mountKey(o: ConnectButtonOptions): string {
-  return JSON.stringify([o.mode, o.providers, o.appId, o.redirectUri, o.requestedCapUsd, o.baseUrl, o.theme]);
+  return JSON.stringify([o.mode, o.providers, o.appId, o.redirectUri, o.requestedCapUsd, o.baseUrl, o.theme, o.directKeyStorage]);
 }
 
 /**

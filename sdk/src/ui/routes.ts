@@ -13,6 +13,8 @@ export interface Config {
   vault: UiProvider | null;
   /** The providers outside the registry, as the app described them. */
   custom?: Record<string, CustomProvider>;
+  /** Direct: where the app keeps the Direct API key, when the app says. */
+  directKeyStorage?: "browser" | "server";
 }
 
 export type DirectStep = "entry" | "guide" | "paste" | "checking" | "connected";

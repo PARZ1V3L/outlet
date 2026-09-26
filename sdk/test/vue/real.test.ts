@@ -3,6 +3,7 @@
 import { afterEach, expect, it } from "vitest";
 import { createApp, defineComponent, h } from "vue";
 import { ConnectButton, useConnectButton } from "../../src/vue/index.js";
+import { click, sheet, state } from "../ui/helpers.js";
 
 afterEach(() => document.body.replaceChildren());
 
@@ -18,6 +19,20 @@ it("<ConnectButton> mounts the real button into the element; destroy() leaves it
   app.unmount();
   expect(div.shadowRoot!.childNodes.length).toBe(0);
   expect(div.childNodes.length).toBe(0);
+});
+
+it("<ConnectButton> passes directKeyStorage through: the paste screen says where the app keeps the key", () => {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const app = createApp(ConnectButton, { mode: "direct", providers: ["openai"], directKeyStorage: "browser", onSession() {} });
+  app.mount(container);
+  const div = container.firstElementChild as HTMLElement;
+  expect(div.hasAttribute("directkeystorage")).toBe(false);
+  div.shadowRoot!.querySelector("button")!.click();
+  click("I have my Direct API key");
+  expect(state()).toBe("direct-openai-paste");
+  expect(sheet().querySelector("p.key-storage")?.textContent).toBe("This app keeps your Direct API key in your browser.");
+  app.unmount();
 });
 
 it("useConnectButton(): open() shows the real sheet, unmount takes it down", () => {

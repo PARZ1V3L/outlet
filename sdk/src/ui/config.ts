@@ -41,6 +41,10 @@ export function configure(o: ConnectButtonOptions): Config {
     fail('mode must be "direct", "vault" or "both".', "ui_mode");
   }
   if (typeof o.onSession !== "function") fail("onSession is required.", "ui_on_session_required");
+  const storage = o.directKeyStorage;
+  if (storage !== undefined && storage !== "browser" && storage !== "server") {
+    fail('directKeyStorage must be "browser" or "server".', "ui_direct_key_storage");
+  }
   const list = Array.isArray(o.providers) ? o.providers : [];
   const ids: UiProvider[] = [];
   // No prototype: an id such as "constructor" must never look described.
@@ -81,6 +85,7 @@ export function configure(o: ConnectButtonOptions): Config {
     direct: o.mode === "vault" ? [] : providers,
     vault: o.mode === "direct" ? null : vault,
     custom,
+    ...(storage ? { directKeyStorage: storage } : {}),
   };
 }
 

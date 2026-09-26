@@ -21,9 +21,9 @@
  * The hook mounts with mountConnectButton() when the element attaches and
  * destroys the button when it detaches or the component unmounts. React
  * StrictMode's double mount leaves one live button. When mode, providers,
- * appId, redirectUri, requestedCapUsd, baseUrl, theme or session change,
- * the button is destroyed and mounted again; a new onSession or onError
- * reaches the button without one.
+ * appId, redirectUri, requestedCapUsd, baseUrl, directKeyStorage, theme or
+ * session change, the button is destroyed and mounted again; a new
+ * onSession or onError reaches the button without one.
  */
 import { createElement, useCallback, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";

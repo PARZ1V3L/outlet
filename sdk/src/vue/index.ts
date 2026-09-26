@@ -22,8 +22,9 @@
  * The composable mounts with mountConnectButton() in onMounted and destroys
  * the button in onBeforeUnmount. Pass a Ref (or a computed) to change the
  * options later: when mode, providers, appId, redirectUri, requestedCapUsd,
- * baseUrl, theme or session change, the button is destroyed and mounted
- * again; a new onSession or onError reaches the button without one.
+ * baseUrl, directKeyStorage, theme or session change, the button is
+ * destroyed and mounted again; a new onSession or onError reaches the
+ * button without one.
  */
 import { defineComponent, h, onBeforeUnmount, onMounted, ref, unref, watch } from "vue";
 import type { PropType, Ref } from "vue";
@@ -90,6 +91,7 @@ export const ConnectButton = defineComponent({
     redirectUri: String,
     requestedCapUsd: Number,
     baseUrl: String,
+    directKeyStorage: String as PropType<"browser" | "server">,
     onSession: { type: Function as PropType<ConnectButtonOptions["onSession"]>, required: true },
     onError: Function as PropType<(error: unknown) => void>,
     theme: String as PropType<"auto" | "light" | "dark">,
