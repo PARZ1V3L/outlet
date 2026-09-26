@@ -14,7 +14,7 @@ is never in the data path.
 - **React and Vue:** `@useoutlet/sdk/react` and `@useoutlet/sdk/vue`. Examples in [examples/react/](examples/react/) and [examples/vue/](examples/vue/).
 - **AI coding tools:** a Claude Code plugin, a Cursor rule and an MCP docs server. See [ai-tools/](ai-tools/).
 - **Docs:** [useoutlet.dev/docs](https://useoutlet.dev/docs/)
-- **Vault invites:** registration is by invite during early access. Direct mode needs none. [useoutlet.dev](https://useoutlet.dev)
+- **Vault registration:** open. Register your app at [useoutlet.dev/register](https://useoutlet.dev/register). Direct mode needs none.
 - **Security:** [SECURITY.md](SECURITY.md). security@useoutlet.dev
 
 The hosted vault at api.useoutlet.dev is private code, by design
