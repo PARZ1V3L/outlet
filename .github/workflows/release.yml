@@ -1,7 +1,9 @@
 name: Release
 
 # Build and test without a publish credential. Only the finished tarball
-# reaches the job that can publish through npm trusted publishing.
+# reaches the job that can publish through npm trusted publishing. A third
+# job then writes the GitHub Release from the CHANGELOG entry, with the
+# workflow token's contents: write and nothing else.
 on:
   push:
     tags: ["v*"]
@@ -74,3 +76,37 @@ jobs:
           name: tarball
       # No checkout, dependency install or lifecycle scripts in this job.
       - run: npm publish ./useoutlet-sdk-*.tgz --provenance --access public --ignore-scripts
+
+  release-notes:
+    name: GitHub Release with the CHANGELOG entry
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The notes are this version's entry in sdk/CHANGELOG.md as written:
+      # the paragraph that opens with the version and a colon, or a
+      # "## version" section in the older shape. No entry, no release.
+      - name: Create the GitHub Release with this version's CHANGELOG entry
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            !found && index($0, v ": ") == 1 { found = 1; para = 1 }
+            !found && ($0 == "## " v || index($0, "## " v " ") == 1) { found = 1; next }
+            found && para && $0 == "" { exit }
+            found && !para && index($0, "## ") == 1 { exit }
+            found { print }
+          ' sdk/CHANGELOG.md | sed -e '/./,$!d' > notes.md
+          if [ ! -s notes.md ]; then
+            echo "sdk/CHANGELOG.md has no entry for $version"
+            exit 1
+          fi
+          cat notes.md
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md
