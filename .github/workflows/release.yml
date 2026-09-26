@@ -90,7 +90,8 @@ jobs:
           persist-credentials: false
       # The notes are this version's entry in sdk/CHANGELOG.md as written:
       # the paragraph that opens with the version and a colon, or a
-      # "## version" section in the older shape. No entry, no release.
+      # "## version" section, which ends at the next heading or at the next
+      # paragraph-shaped entry. No entry, no release.
       - name: Create the GitHub Release with this version's CHANGELOG entry
         env:
           GH_TOKEN: ${{ github.token }}
@@ -102,6 +103,7 @@ jobs:
             !found && ($0 == "## " v || index($0, "## " v " ") == 1) { found = 1; next }
             found && para && $0 == "" { exit }
             found && !para && index($0, "## ") == 1 { exit }
+            found && !para && $0 ~ /^[0-9]+\.[0-9]+\.[0-9]+: / { exit }
             found { print }
           ' sdk/CHANGELOG.md | sed -e '/./,$!d' > notes.md
           if [ ! -s notes.md ]; then
