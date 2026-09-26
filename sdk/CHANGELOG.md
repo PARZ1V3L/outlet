@@ -1,12 +1,6 @@
 # Changelog (@useoutlet/sdk)
 
-## Unreleased
-
-Added: @useoutlet/sdk/react (useConnectButton, ConnectButton) and @useoutlet/sdk/vue (useConnectButton, ConnectButton), with examples.
-
-Added: npx @useoutlet/sdk mcp, a dependency-free MCP server that serves the docs and the setup prompt. Added: the Claude Code plugin and the Cursor rule under ai-tools/.
-
-Changed: the MCP docs server also speaks the 2026-07-28 revision (server/discover, per-request metadata), beside the initialize handshake.
+0.6.2: the Connect your AI button as a React hook and a Vue composable (@useoutlet/sdk/react, @useoutlet/sdk/vue), with an example of each. npx @useoutlet/sdk mcp, a dependency-free MCP docs server that serves the docs and the setup prompt and speaks both the 2026-07-28 revision and the initialize handshake. The Claude Code plugin and the Cursor rule under ai-tools/. The Direct paste screen can say where the app keeps the user's Direct API key. The docs server finishes its reply when a client closes the pipe early.
 
 0.6.1: OpenRouter joins OpenAI, Anthropic and fal in Vault: the Connect your AI button offers its Vault door with OpenRouter's own words, and `providerIds("vault")` and `providers.json` say so. The README's AI prompt names `providers`. The spec gains the cap edit and its resume, the approve claim, the meter's fresh read, and the audit actions that go with them.
 
