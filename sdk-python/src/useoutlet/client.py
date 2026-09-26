@@ -180,7 +180,7 @@ class Outlet:
         if not code:
             raise OutletError("No authorization code in the redirect URL.", "no_code")
         if not state or pending is None or state != expected:
-            raise OutletError("State mismatch — possible CSRF; aborting.", "state_mismatch")
+            raise OutletError("State mismatch. Possible CSRF; aborting.", "state_mismatch")
         session = exchange_code(
             pending.grant_request_id,
             code,

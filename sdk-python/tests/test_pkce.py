@@ -175,6 +175,7 @@ class TestExchange:
         with pytest.raises(OutletError) as e:
             outlet.exchange("code_1", "WRONG")
         assert e.value.code == "state_mismatch"
+        assert e.value.message == "State mismatch. Possible CSRF; aborting."
         assert len(vault.requests) == seen
 
     def test_errors_when_no_transaction_is_in_progress(self, vault):

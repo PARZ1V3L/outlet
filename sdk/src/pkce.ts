@@ -234,7 +234,7 @@ export async function handleRedirect(
   }
   if (!state || state !== txn.state) {
     throw new OutletError(
-      "State mismatch — possible CSRF; aborting.",
+      "State mismatch. Possible CSRF; aborting.",
       "state_mismatch",
     );
   }

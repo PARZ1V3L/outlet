@@ -255,7 +255,10 @@ describe("handleRedirect()", () => {
     const fetchMock = mockFetch({});
     await expect(
       handleRedirect({ url: "https://app.example/cb?code=code_1&state=WRONG" }),
-    ).rejects.toMatchObject({ code: "state_mismatch" });
+    ).rejects.toMatchObject({
+      code: "state_mismatch",
+      message: "State mismatch. Possible CSRF; aborting.",
+    });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
