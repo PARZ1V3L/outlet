@@ -1,5 +1,5 @@
 /**
- * Direct (paste) mode — usable today; vault mode is in early access.
+ * Direct (paste) mode. Vault mode is open: register your app at useoutlet.dev/register.
  *
  * The user pastes their own provider API key; direct() validates it locally
  * and returns the same OutletSession shape that connect() returns in vault

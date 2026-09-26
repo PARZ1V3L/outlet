@@ -2,7 +2,7 @@
  * @useoutlet/sdk — connect your users' AI accounts to your app.
  *
  * Status: direct mode is live today. Vault mode (connect / refresh / status /
- * revoke) is in early access — email hello@useoutlet.dev to register your app.
+ * revoke) is open. Register your app at useoutlet.dev/register.
  *
  *   import Outlet from "@useoutlet/sdk";
  *
@@ -64,7 +64,7 @@ function authOf(opts: RequestOptions): Auth {
  */
 export async function connect(opts: ConnectOptions): Promise<OutletSession> {
   const baseUrl = opts.baseUrl ?? DEFAULT_BASE_URL;
-  // vault mode: server-driven grant flow (in early access).
+  // vault mode: server-driven grant flow.
   // 1. create a grant request; 2. send user to grantUrl; 3. poll for completion.
   const { grantRequestId, grantUrl } = await api<{
     grantRequestId: string;
