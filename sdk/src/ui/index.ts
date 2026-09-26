@@ -36,6 +36,18 @@
  * (session: storedSession). handle.open(), handle.close() and
  * handle.destroy() do what they say; destroy() leaves the target empty.
  *
+ * When a connection ends, the button shows one screen with the one thing
+ * the person can do, in place. A Vault connection paused at its cap gets
+ * Raise the Vault cap: the account page opens in a new tab, and when they
+ * are back the button refreshes the session on its own and hands the new
+ * one to onSession. A revoked, disconnected or expired Vault connection
+ * gets Connect again, which runs the grant again. A Direct API key the
+ * provider refused gets Paste a new Direct API key. The button hears about
+ * the end from the core: status(), refresh() and the fetch from
+ * wrapFetch() throw ConnectionEndedError and announce it on the page, so
+ * the app writes nothing for it beyond receiving the new session through
+ * onSession. Mount with the stored session so the button knows the grant.
+ *
  * Providers: every id in the provider registry (../providers.ts) has a
  * named Direct screen with that provider's keys page, creation step and
  * format hint. A provider outside the registry gets the generic Direct

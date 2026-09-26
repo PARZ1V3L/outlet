@@ -102,6 +102,8 @@ p.error{color:var(--error)}
 .primary{background:var(--accent);border:1px solid transparent;color:#18181a}
 .primary:hover{filter:brightness(.96)}
 .primary:disabled{cursor:default;background:var(--field);border-color:var(--line);color:var(--muted);filter:none}
+a.primary{text-decoration:none}
+.tile.off .eyeL,.tile.off .eyeR{fill:#8a8a85}
 .secondary{color:var(--ink);border:1px solid var(--line);min-height:42px;font-size:13px;font-weight:700;padding:10px 14px}
 .secondary:hover{background:#8881}
 .primary svg{width:18px;height:18px}

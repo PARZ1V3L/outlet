@@ -2,6 +2,7 @@
 /** Every widget state in the design manifest is reachable through the
  *  real screens (the eight hosted grant-* states live on useoutlet.dev). */
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ended } from "../../src/ended.js";
 import { connectRedirect } from "../../src/pkce.js";
 import type { OutletSession } from "../../src/index.js";
 import { CSS } from "../../src/ui/styles.js";
@@ -22,6 +23,8 @@ const SHEET_STATES = [
   "vault-explain", "vault-only", "vault-leaving", "vault-connected", "vault-return-error", "vault-return-checking",
   "vault-anthropic-explain", "vault-anthropic-only", "vault-anthropic-leaving", "vault-anthropic-connected",
   "vault-anthropic-return-checking", "vault-anthropic-return-error",
+  "vault-capped", "vault-ended", "vault-anthropic-capped", "vault-anthropic-ended",
+  "direct-openai-refused", "direct-anthropic-refused", "direct-google-refused",
 ];
 const BUTTON_STATES = ["button-idle", "button-hover", "button-focused", "button-connected-openai", "button-connected-anthropic", "button-connected-google"];
 
@@ -105,6 +108,19 @@ describe("the manifest", () => {
       m = mount({ mode: "vault", providers: [p], session: good.promise });
       good.resolve({ grantId: "g", keys: { [p]: "k" }, capUsd: 5, expiresAt: "2026-10-01T00:00:00Z" });
       await flush(); note();
+      cleanup();
+    }
+
+    // The connection ends, announced on the page for the grant a held session names.
+    for (const p of ["openai", "anthropic"] as const) {
+      m = mount({ mode: "vault", providers: [p], session: { grantId: "grant_e", keys: { [p]: "k" }, capUsd: 5, expiresAt: "2026-10-01T00:00:00Z", mode: "vault" } });
+      ended("capped", "grant_e", { provider: p }); note();
+      ended("revoked", "grant_e", { provider: p }); note();
+      cleanup();
+    }
+    for (const p of ["openai", "anthropic", "google"] as const) {
+      m = mount({ mode: "direct", providers: [p], session: { grantId: "direct_e", keys: { [p]: "k" }, capUsd: Infinity, expiresAt: "9999-12-31T23:59:59Z", mode: "direct" } });
+      ended("refused", "direct_e", { provider: p }); note();
       cleanup();
     }
 

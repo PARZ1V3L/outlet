@@ -8,7 +8,7 @@ import {
   frame, heading, keyReassurance, message, paragraphs, primary, secondary,
 } from "./render-shell.js";
 import { fill, screenProvider } from "./screen-provider.js";
-import { choose, directErrors, directKeyStorage, providerList } from "./strings.js";
+import { choose, directErrors, directKeyStorage, directRefused, providerList } from "./strings.js";
 import type { UiProvider } from "./types.js";
 
 /** The provider a Direct screen is about, and its words. */
@@ -175,6 +175,19 @@ export function renderDirectConnected(view: View, cfg: Config, a: Actions): Rend
   sheet.appendChild(m.wrap);
   finish(sheet);
   return { sheet, heading: m.heading, focus: done };
+}
+
+/** The provider refused the pasted key: the line, grey eyes, and one
+ *  button back to the paste screen. */
+export function renderDirectRefused(view: View, cfg: Config, a: Actions): Rendered {
+  const { p, words } = wordsOf(view, cfg);
+  const sheet = frame(view, cfg, a, { header: words.paste.header, mode: "direct", status: true });
+  const m = message({ title: fill(directRefused.title, p.name), off: true });
+  const paste = primary(directRefused.paste, () => a.go(directView("paste", p.id)));
+  m.wrap.appendChild(actions(paste));
+  sheet.appendChild(m.wrap);
+  finish(sheet);
+  return { sheet, heading: m.heading, focus: paste };
 }
 
 /** wrong-provider, admin-refused, unsupported and handoff-error. */

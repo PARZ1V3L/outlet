@@ -19,6 +19,8 @@ export interface Actions {
   save(input: HTMLInputElement): void;
   continueToOutlet(button: HTMLButtonElement): void;
   done(): void;
+  /** The capped screen's link opened the account page: refresh when the person is back. */
+  raiseCap(): void;
 }
 
 export interface Rendered {
@@ -142,14 +144,16 @@ export function actions(...items: HTMLElement[]): HTMLElement {
   return h("div", { class: "actions" }, ...items);
 }
 
-/** The centred status body: a busy ring or the socket, the heading, lines. */
-export function message(o: { busy?: boolean; wink?: boolean; title: string; lines?: string[] }): {
+/** The centred status body: a busy ring or the socket, the heading, lines.
+ *  The socket carries the state: voltage eyes live, grey eyes (`off`) done
+ *  or gone, the wink on success. */
+export function message(o: { busy?: boolean; wink?: boolean; off?: boolean; title: string; lines?: string[] }): {
   wrap: HTMLElement; heading: HTMLElement;
 } {
   const head = heading(o.title);
   const mark = o.busy
     ? h("span", { class: "busy", "aria-hidden": "true" })
-    : h("span", { class: "tile" + (o.wink ? " wink" : "") }, svg(SOCKET));
+    : h("span", { class: "tile" + (o.wink ? " wink" : "") + (o.off ? " off" : "") }, svg(SOCKET));
   const wrap = h("div", { class: "message" }, mark, head);
   append(wrap, paragraphs(o.lines ?? []));
   return { wrap, heading: head };

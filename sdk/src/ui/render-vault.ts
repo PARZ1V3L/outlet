@@ -1,4 +1,5 @@
-/** The Vault screens: explain, leaving, the return, connected. */
+/** The Vault screens: explain, leaving, the return, connected, and the two
+ *  connection ends (capped, ended). */
 import { h, svg } from "./dom.js";
 import { type Config, type View, vaultProviderOf } from "./routes.js";
 import {
@@ -95,4 +96,32 @@ export function renderVaultError(view: View, cfg: Config, a: Actions): Rendered 
   sheet.appendChild(actions(primary(s.retry ?? "", (b) => a.continueToOutlet(b))));
   finish(sheet);
   return { sheet, heading: head };
+}
+
+/** Paused at its cap: the line, and one link that opens the account page
+ *  in a new tab. The socket keeps its voltage eyes: the connection is
+ *  still there. When the person is back, the widget refreshes. */
+export function renderVaultCapped(view: View, cfg: Config, a: Actions): Rendered {
+  const s = vaultWords(view, cfg, "capped").status!;
+  const sheet = frame(view, cfg, a, { header: s.header, mode: "vault", status: true });
+  const m = message({ title: s.title });
+  const raise = h("a", { class: "primary", href: s.raiseUrl ?? "", target: "_blank", rel: "noopener noreferrer" }, s.raise ?? "");
+  raise.addEventListener("click", () => a.raiseCap());
+  m.wrap.appendChild(actions(raise));
+  sheet.appendChild(m.wrap);
+  finish(sheet);
+  return { sheet, heading: m.heading, focus: raise };
+}
+
+/** Revoked, disconnected or expired: the line, grey eyes, and one button
+ *  that runs the grant again. */
+export function renderVaultEnded(view: View, cfg: Config, a: Actions): Rendered {
+  const s = vaultWords(view, cfg, "ended").status!;
+  const sheet = frame(view, cfg, a, { header: s.header, mode: "vault", status: true });
+  const m = message({ title: s.title, off: true });
+  const again = primary(s.again ?? "", (b) => a.continueToOutlet(b));
+  m.wrap.appendChild(actions(again));
+  sheet.appendChild(m.wrap);
+  finish(sheet);
+  return { sheet, heading: m.heading, focus: again };
 }

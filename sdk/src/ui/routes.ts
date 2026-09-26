@@ -17,8 +17,8 @@ export interface Config {
   directKeyStorage?: "browser" | "server";
 }
 
-export type DirectStep = "entry" | "guide" | "paste" | "checking" | "connected";
-export type VaultStep = "explain" | "leaving" | "connected" | "start-error" | "return-error" | "return-checking";
+export type DirectStep = "entry" | "guide" | "paste" | "checking" | "connected" | "refused";
+export type VaultStep = "explain" | "leaving" | "connected" | "start-error" | "return-error" | "return-checking" | "capped" | "ended";
 type VaultScreen = Exclude<VaultStep, "explain"> | "explain" | "only";
 
 export const DIRECT_ERRORS = [
@@ -82,7 +82,7 @@ export function vaultView(cfg: Config, step: VaultStep, provider: UiProvider | n
 
 /** The provider a Vault screen's id names. */
 export function vaultProviderOf(id: string): UiProvider {
-  const m = /^vault-(.+)-(?:explain|only|leaving|connected|start-error|return-error|return-checking)$/.exec(id);
+  const m = /^vault-(.+)-(?:explain|only|leaving|connected|start-error|return-error|return-checking|capped|ended)$/.exec(id);
   return m ? (m[1] as UiProvider) : "openai";
 }
 
@@ -114,7 +114,7 @@ export function parentView(cfg: Config, view: View): View | null {
   }
   if (id.startsWith("direct-")) {
     if (!provider) return null;
-    if (id.endsWith("-checking") || id.endsWith("-connected")) return null;
+    if (id.endsWith("-checking") || id.endsWith("-connected") || id.endsWith("-refused")) return null;
     if (id.endsWith("-entry")) {
       const list = providerListView(cfg);
       if (list) return list;
@@ -122,7 +122,9 @@ export function parentView(cfg: Config, view: View): View | null {
     }
     return directView("entry", provider);
   }
+  // The connection-end screens carry one action and no Back.
   if (id.endsWith("-only") || id.endsWith("-return-checking") || id.endsWith("-connected")) return null;
+  if (id.endsWith("-capped") || id.endsWith("-ended")) return null;
   if (id.endsWith("-explain")) return { id: "choose" };
   // Leaving and errors go back to the explanation
   return vaultView(cfg, "explain");

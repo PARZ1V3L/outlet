@@ -77,4 +77,9 @@ export interface VaultStatusStrings extends StatusStrings {
   retry?: string;
   manage?: string;
   manageUrl?: string;
+  /** The capped screen: the one action opens the account page on useoutlet.dev. */
+  raise?: string;
+  raiseUrl?: string;
+  /** The ended screen: the one action runs the grant again. */
+  again?: string;
 }

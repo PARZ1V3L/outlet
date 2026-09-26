@@ -4,7 +4,12 @@ import { OutletError, type OutletSession } from "../types.js";
 import type { Config } from "./routes.js";
 import type { ConnectButtonOptions, CustomProvider, UiProvider } from "./types.js";
 
-export interface Bound { mode: "direct" | "vault"; provider: UiProvider }
+export interface Bound {
+  mode: "direct" | "vault";
+  provider: UiProvider;
+  /** The session's grant id, matched against a connection end announced on the page. */
+  grantId: string;
+}
 
 export function fail(message: string, code: string): never {
   throw new OutletError(message, code);
@@ -102,7 +107,7 @@ export function boundFrom(session: OutletSession | null | undefined, cfg: Config
   const mode = session.mode === "direct" ? "direct" : "vault";
   // Vault has screens only where the registry marks modes.vault.
   if (mode === "vault" && !getProvider(provider)?.modes.vault) return null;
-  return { mode, provider };
+  return { mode, provider, grantId: typeof session.grantId === "string" ? session.grantId : "" };
 }
 
 /** Shadow roots this module attached, so a mount after destroy() reuses

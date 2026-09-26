@@ -10,6 +10,13 @@ export function renderTrigger(): HTMLButtonElement {
     svg(CONNECT_BUTTON));
 }
 
+/** Back to the fixed asset: the connection the button showed has ended. */
+export function setIdle(b: HTMLButtonElement): void {
+  b.className = "fixed-button";
+  b.setAttribute("aria-label", button.idle);
+  b.replaceChildren(svg(CONNECT_BUTTON));
+}
+
 /** `providerName` is the display name: the registry's, or the app's own. */
 export function setConnected(b: HTMLButtonElement, mode: "direct" | "vault", providerName: string): void {
   b.className = "connected-button";

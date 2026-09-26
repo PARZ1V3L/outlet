@@ -130,6 +130,14 @@ export const directGeneric = {
   noKeysPage: "This app has not provided a page for getting your {provider} Direct API key.",
 };
 
+/** The Direct message state after the provider refused the pasted key: the
+ *  line, and one action back to the paste screen. Wording: Parz's pass
+ *  (NEVER-DEAD-END-2026-09-26). */
+export const directRefused = {
+  title: "{provider} refused your Direct API key",
+  paste: "Paste a new Direct API key",
+};
+
 /** The Direct error screens, for whichever pair of providers applies. */
 export const directErrors = {
   "direct-error-empty": {
@@ -278,5 +286,17 @@ export const vaultStatus = {
     title: "Vault is not connected",
     lines: ["Approval did not finish.", "Return to Outlet to try again."],
     retry: "Return to Outlet",
+  },
+  // The connection-end screens: the line and one action each. Wording:
+  // Parz's pass (NEVER-DEAD-END-2026-09-26). The capped action opens the
+  // account page in a new tab; the button refreshes when the person is back.
+  capped: {
+    title: "This Vault connection is paused at its cap",
+    raise: "Raise the Vault cap",
+    raiseUrl: "https://useoutlet.dev/account/",
+  },
+  ended: {
+    title: "This Vault connection has ended",
+    again: "Connect again",
   },
 };
