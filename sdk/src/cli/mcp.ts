@@ -184,6 +184,12 @@ export function serve(version: string): void {
     if (!isObject(msg)) return fail(null, -32600, "Invalid Request");
     void dispatch(msg);
   });
-  lines.on("close", () => process.exit(0));
+  // On stdin close the process ends on its own once the loop drains: a
+  // reply still waiting on the docs read and a stdout write still queued
+  // both keep it alive, so a one-shot pipe gets its whole reply. exit()
+  // here would drop the read and cut a line above the pipe buffer.
+  lines.on("close", () => {
+    process.exitCode = 0;
+  });
   process.stdout.on("error", () => process.exit(0));
 }

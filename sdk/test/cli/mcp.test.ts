@@ -1,7 +1,7 @@
 /** The outlet command and its MCP docs server as npm ships them: built to
  *  dist/ first, then spawned the way an AI tool spawns them. */
 import { execFileSync, spawn, spawnSync, type ChildProcess } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -99,6 +99,26 @@ describe("npx @useoutlet/sdk mcp", () => {
     expect((await c.request("ping")).result).toEqual({});
     expect(await c.close()).toBe(0);
     expect(c.stderr.join("")).toBe("");
+  });
+
+  it("a one-shot pipe that closes stdin at once gets the whole outlet_docs reply, above the pipe buffer, and exit 0", () => {
+    // Docs above the 64 KB pipe buffer: an exit on stdin close would drop
+    // the reply still waiting on the read, or cut the line once written.
+    const dir = mkdtempSync(join(tmpdir(), "outlet-docs-"));
+    try {
+      const text = "The Outlet docs, one line of many.\n".repeat(9000);
+      writeFileSync(join(dir, "docs.txt"), text);
+      const request = JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "outlet_docs", arguments: {} } });
+      const run = spawnSync(process.execPath, [bin, "mcp"], {
+        input: request + "\n", encoding: "utf8", maxBuffer: 8 * 1024 * 1024,
+        env: { ...process.env, OUTLET_DOCS_URL: pathToFileURL(join(dir, "docs.txt")).href },
+      });
+      expect(run.status).toBe(0);
+      expect(run.stderr).toBe("");
+      expect(JSON.parse(run.stdout)).toEqual({ jsonrpc: "2.0", id: 1, result: { content: [{ type: "text", text }] } });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("an unknown protocol version gets the newest the server speaks", async () => {
