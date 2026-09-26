@@ -13,20 +13,24 @@
  *
  *   // use the official provider SDK — Outlet is not in the data path
  *   const ai = new OpenAI({ apiKey: session.keys.openai });
+ *
+ * A connection that ends (capped, revoked, expired, or a Direct key the
+ * provider refuses) is a ConnectionEndedError from status(), refresh() and
+ * the optional fetch from wrapFetch(); the Connect your AI button shows
+ * the one thing the user can do, and onSession receives the new session.
  */
 
-import {
-  ConnectOptions,
-  GrantInfo,
-  OutletSession,
-  RequestOptions,
-} from "./types.js";
-import { DEFAULT_BASE_URL, api, type Auth } from "./http.js";
-import { assertVaultGrant, direct } from "./direct.js";
+import { ConnectOptions, OutletSession } from "./types.js";
+import { DEFAULT_BASE_URL, api } from "./http.js";
+import { direct } from "./direct.js";
+import { refresh, revoke, status } from "./grants.js";
 import { connectRedirect, handleRedirect } from "./pkce.js";
+import { wrapFetch } from "./wrap-fetch.js";
 
 export * from "./types.js";
 export { direct, type DirectOptions } from "./direct.js";
+export { refresh, revoke, status } from "./grants.js";
+export { wrapFetch, type WrapFetchOptions } from "./wrap-fetch.js";
 export { getProvider, providerIds, providers } from "./providers.js";
 export type {
   KeyShape,
@@ -48,14 +52,6 @@ export type {
   PublicSession,
   StartedGrant,
 } from "./pkce.js";
-
-/** Confidential clients authenticate with the app secret; public clients
- *  (PKCE, SPEC §7.1) carry a grant-scoped refresh token instead. */
-function authOf(opts: RequestOptions): Auth {
-  return opts.refreshToken
-    ? { bearer: opts.refreshToken }
-    : { appSecret: opts.appSecret };
-}
 
 /**
  * Begin the connect flow. In browsers this opens the Outlet grant screen
@@ -97,54 +93,6 @@ export async function connect(opts: ConnectOptions): Promise<OutletSession> {
   }
 }
 
-/**
- * Re-fetch (and possibly rotate) keys for an existing grant. Server-side
- * for confidential clients. Public clients (RequestOptions.refreshToken)
- * get a ROTATED token back (OAuth 2.1 §6.1): the token they presented is
- * void the moment the vault answers, so callers MUST persist the returned
- * refreshToken before making another call — the old one now 401s.
- */
-export async function refresh(
-  grantId: string,
-  opts: RequestOptions = {},
-): Promise<OutletSession & { refreshToken?: string }> {
-  assertVaultGrant(grantId);
-  const r = await api<OutletSession & { refresh_token?: string }>(
-    opts.baseUrl ?? DEFAULT_BASE_URL,
-    `/grants/${grantId}/refresh`, { method: "POST" }, authOf(opts));
-  // why the rename: the wire is snake_case (SPEC §7.1); the SDK surface is
-  // camelCase. Dropping the rotated token here stranded public clients —
-  // their stored token was already voided server-side (security review).
-  const { refresh_token, ...session } = r;
-  return refresh_token ? { ...session, refreshToken: refresh_token } : session;
-}
-
-/** App-initiated revocation (users can always revoke from their dashboard). */
-export async function revoke(
-  grantId: string,
-  opts: RequestOptions = {},
-): Promise<void> {
-  assertVaultGrant(grantId);
-  await api<unknown>(opts.baseUrl ?? DEFAULT_BASE_URL,
-    `/grants/${grantId}`, { method: "DELETE" }, authOf(opts));
-}
-
-/**
- * Current status + spend for a grant. A pure read: the vault's /status
- * endpoint never returns key material (the old GET /grants/:id habit
- * re-delivered the full key on every status poll — security review).
- * spendUsd is the vault's last meter reading: month-to-date, up to ~5
- * minutes stale, 0 for a grant not yet metered.
- */
-export async function status(
-  grantId: string,
-  opts: RequestOptions = {},
-): Promise<GrantInfo> {
-  assertVaultGrant(grantId);
-  return api<GrantInfo>(opts.baseUrl ?? DEFAULT_BASE_URL,
-    `/grants/${grantId}/status`, undefined, authOf(opts));
-}
-
 const Outlet = {
   connect,
   connectRedirect,
@@ -153,5 +101,6 @@ const Outlet = {
   refresh,
   revoke,
   status,
+  wrapFetch,
 };
 export default Outlet;

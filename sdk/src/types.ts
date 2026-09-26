@@ -102,3 +102,46 @@ export class OutletError extends Error {
     this.name = "OutletError";
   }
 }
+
+/** Why a connection ended. */
+export type EndReason = "capped" | "revoked" | "expired" | "refused";
+
+/** What a developer reads in the stack trace, by reason. Wording: Parz's
+ *  word pass (NEVER-DEAD-END-2026-09-26). */
+const ENDED_MESSAGES: Record<EndReason, string> = {
+  capped: "This Vault connection is paused at its cap. When the user raises the cap on useoutlet.dev, refresh() returns the key.",
+  revoked: "This Vault connection was revoked. Ask the user to connect again.",
+  expired: "This Vault connection can no longer be refreshed. Ask the user to connect again.",
+  refused: "The provider refused this Direct API key. Ask the user for a new one.",
+};
+
+/**
+ * A connection the app can no longer use. `reason` says why: the Vault
+ * connection is paused at its cap ("capped"), was revoked or disconnected
+ * ("revoked"), can no longer be refreshed because its refresh token is
+ * gone ("expired"), or the provider refused the Direct API key ("refused").
+ * Thrown by status(), refresh() and the fetch from wrapFetch(). On a page,
+ * the Connect your AI button bound to the same grant shows one screen for
+ * the reason with the one thing the user can do, and onSession receives
+ * the new session when they are done. `code` is "connection_ended".
+ */
+export class ConnectionEndedError extends OutletError {
+  readonly reason: EndReason;
+  readonly grantId: string;
+  /** The vault's answer, when status() gave one (capped and revoked). */
+  readonly info?: GrantInfo;
+  /** The provider the key belonged to, when known. */
+  readonly provider?: Provider;
+  constructor(
+    reason: EndReason,
+    grantId: string,
+    extra: { info?: GrantInfo; provider?: Provider; status?: number; message?: string } = {},
+  ) {
+    super(extra.message ?? ENDED_MESSAGES[reason], "connection_ended", extra.status);
+    this.name = "ConnectionEndedError";
+    this.reason = reason;
+    this.grantId = grantId;
+    if (extra.info) this.info = extra.info;
+    if (extra.provider) this.provider = extra.provider;
+  }
+}
