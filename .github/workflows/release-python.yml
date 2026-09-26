@@ -1,0 +1,67 @@
+name: Release Python
+
+# Lint, test and build without a publish credential. Only the finished wheel
+# and sdist reach the job that can publish through PyPI trusted publishing
+# (OIDC, no token). The tag is py-v<version>, the version in
+# sdk-python/src/useoutlet/_version.py.
+on:
+  push:
+    tags: ["py-v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Tag must match sdk-python/src/useoutlet/_version.py
+        run: |
+          want="py-v$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' sdk-python/src/useoutlet/_version.py)"
+          if [ "$GITHUB_REF_NAME" != "$want" ]; then
+            echo "tag $GITHUB_REF_NAME does not match _version.py ($want)"
+            exit 1
+          fi
+      - run: python -m pip install ruff==0.16.9 pytest==9.1.1 build==1.6.1
+      - run: ruff check .
+        working-directory: sdk-python
+      - run: python -m build
+        working-directory: sdk-python
+      - run: python -m pip install dist/*.whl
+        working-directory: sdk-python
+      - run: python -m pytest
+        working-directory: sdk-python
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: python-dist
+          path: sdk-python/dist/
+          if-no-files-found: error
+
+  publish:
+    name: Publish useoutlet to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: python-dist
+          path: dist
+      # No checkout, dependency install or build in this job. The action
+      # exchanges the workflow's OIDC token for a short-lived PyPI token and
+      # publishes dist/ with attestations.
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
