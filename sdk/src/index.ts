@@ -82,12 +82,14 @@ export async function connect(opts: ConnectOptions): Promise<OutletSession> {
     console.log(`[outlet] Ask the user to approve: ${grantUrl}`);
   }
 
-  // Poll until the user approves (or the request expires server-side).
+  // Poll until the user approves (or the request expires server-side). The
+  // poll proves itself the way the request did: the vault answers 401 to a
+  // confidential app's poll without the app secret.
   for (;;) {
     const result = await api<
       | { status: "pending" }
       | ({ status: "complete" } & OutletSession)
-    >(baseUrl, `/grants/${grantRequestId}`);
+    >(baseUrl, `/grants/${grantRequestId}`, undefined, { appSecret: opts.appSecret });
     if (result.status === "complete") return result;
     await new Promise((r) => setTimeout(r, 1500));
   }

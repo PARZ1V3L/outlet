@@ -60,3 +60,50 @@ describe("vault_requires_billing speaks to the developer", () => {
     expect(err.message).toBe("Outlet API error (401)");
   });
 });
+
+// The vault requires the app secret on the poll of a connection request as
+// on the request itself; a confidential app's poll without it answers 401.
+describe("connect() polls the connection request with the app secret", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const complete = {
+    status: "complete", grantId: "grant_1", keys: { openai: "app-key" }, capUsd: 10,
+    expiresAt: "2026-12-31T00:00:00Z",
+  };
+  const stubVault = () => {
+    const calls: { url: string; headers: Record<string, string> }[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      calls.push({ url, headers: init?.headers as Record<string, string> });
+      const body = init?.method === "POST"
+        ? { grantRequestId: "gr_1", grantUrl: "https://useoutlet.dev/grant/gr_1" }
+        : complete;
+      return new Response(JSON.stringify(body), {
+        status: init?.method === "POST" ? 201 : 200,
+        headers: { "content-type": "application/json" },
+      });
+    }));
+    return calls;
+  };
+
+  it("a confidential app's poll carries the secret the request carried", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const calls = stubVault();
+    const session = await Outlet.connect({
+      appId: "app_test", providers: ["openai"], appSecret: "apps_x",
+    });
+    expect(session.grantId).toBe("grant_1");
+    expect(calls.map((c) => c.url)).toEqual([
+      "https://api.useoutlet.dev/v0/grants",
+      "https://api.useoutlet.dev/v0/grants/gr_1",
+    ]);
+    for (const c of calls) expect(c.headers["x-outlet-app-secret"]).toBe("apps_x");
+  });
+
+  it("an app without a secret sends no secret header on either call", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const calls = stubVault();
+    await Outlet.connect({ appId: "app_test", providers: ["openai"] });
+    expect(calls).toHaveLength(2);
+    for (const c of calls) expect(c.headers["x-outlet-app-secret"]).toBeUndefined();
+  });
+});
