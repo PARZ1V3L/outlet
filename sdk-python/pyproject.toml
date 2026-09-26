@@ -1,0 +1,79 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "useoutlet"
+dynamic = ["version"]
+description = "Connect your users' AI accounts to your app. Capped, revocable App keys, never raw credentials. Outlet is never in the data path."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "Parz", email = "hello@useoutlet.dev" }]
+keywords = [
+  "ai",
+  "byok",
+  "bring-your-own-key",
+  "api-keys",
+  "api-key-management",
+  "llm",
+  "anthropic",
+  "openai",
+  "google",
+  "gemini",
+  "oauth",
+  "outlet",
+  "typescript",
+  "react",
+  "vue",
+  "mcp",
+  "openrouter",
+  "fal",
+  "widget",
+  "connect-your-ai",
+  "python",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Libraries",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://useoutlet.dev"
+Documentation = "https://useoutlet.dev/docs/"
+Source = "https://github.com/PARZ1V3L/outlet/tree/main/sdk-python"
+Issues = "https://github.com/PARZ1V3L/outlet/issues"
+
+[dependency-groups]
+test = ["pytest>=9"]
+
+[tool.hatch.version]
+path = "src/useoutlet/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/useoutlet"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]

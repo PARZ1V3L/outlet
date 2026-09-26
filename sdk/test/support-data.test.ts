@@ -12,6 +12,10 @@ describe("the support data written from the registry", () => {
     expect(JSON.parse(read("docs/providers.json"))).toEqual({ providers: JSON.parse(JSON.stringify(providers)) });
   });
 
+  it("the Python package carries the same rows, byte for byte", () => {
+    expect(read("sdk-python/src/useoutlet/providers.json")).toBe(read("docs/providers.json"));
+  });
+
   it("the README's Vault provider line names the registry's Vault providers, in the passed order", () => {
     const list = read("sdk/README.md").match(/^Vault provider: choose (.+?)\. Use a separate/m)?.[1] ?? "";
     expect(list).toBe("openai, anthropic, fal or openrouter");

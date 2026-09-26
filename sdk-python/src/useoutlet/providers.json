@@ -1,0 +1,548 @@
+{
+  "providers": [
+    {
+      "id": "openai",
+      "displayName": "OpenAI",
+      "kind": "maker",
+      "keysUrl": "https://platform.openai.com/api-keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key. OpenAI calls it a secret key.",
+      "formatHint": "Paste your whole OpenAI Direct API key.",
+      "keyShape": {
+        "prefix": "sk-",
+        "basis": "example",
+        "source": "https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/projects/subresources/api_keys/methods/list"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": true
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://developers.openai.com/api/docs/quickstart"
+        },
+        {
+          "mode": "vault",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://developers.openai.com/api/reference/administration/overview"
+        }
+      ]
+    },
+    {
+      "id": "anthropic",
+      "displayName": "Anthropic",
+      "kind": "maker",
+      "keysUrl": "https://platform.claude.com/settings/keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Paste your whole Anthropic Direct API key.",
+      "keyShape": {
+        "prefix": "sk-ant-",
+        "basis": "stated",
+        "source": "https://platform.claude.com/docs/en/get-api-key"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": true
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://platform.claude.com/docs/en/get-api-key"
+        },
+        {
+          "mode": "vault",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://platform.claude.com/docs/en/manage-claude/admin-api"
+        }
+      ]
+    },
+    {
+      "id": "google",
+      "displayName": "Gemini",
+      "kind": "maker",
+      "keysUrl": "https://aistudio.google.com/api-keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key in Google AI Studio.",
+      "formatHint": "Your Gemini Direct API key starts with AIza.",
+      "keyShape": {
+        "prefix": "AIza",
+        "basis": "example",
+        "source": "https://docs.cloud.google.com/docs/authentication/api-keys"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://ai.google.dev/gemini-api/docs/api-key"
+        }
+      ]
+    },
+    {
+      "id": "deepseek",
+      "displayName": "DeepSeek",
+      "kind": "maker",
+      "keysUrl": "https://platform.deepseek.com/api_keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Your DeepSeek Direct API key starts with sk-.",
+      "keyShape": {
+        "prefix": "sk-",
+        "basis": "stated",
+        "source": "https://api-docs.deepseek.com/quick_start/agent_integrations/copilot_cli/"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://api-docs.deepseek.com/"
+        }
+      ]
+    },
+    {
+      "id": "xai",
+      "displayName": "Grok",
+      "kind": "maker",
+      "keysUrl": "https://console.x.ai/team/default/api-keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Your Grok Direct API key starts with xai-.",
+      "keyShape": {
+        "prefix": "xai-",
+        "basis": "example",
+        "source": "https://docs.x.ai/developers/rest-api-reference/management/auth"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://docs.x.ai/developers/quickstart"
+        }
+      ]
+    },
+    {
+      "id": "moonshot",
+      "displayName": "Kimi",
+      "kind": "maker",
+      "keysUrl": "https://platform.kimi.ai/console/api-keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Paste your whole Kimi Direct API key.",
+      "keyShape": null,
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://platform.kimi.ai/docs/overview"
+        }
+      ]
+    },
+    {
+      "id": "mistral",
+      "displayName": "Mistral",
+      "kind": "maker",
+      "keysUrl": "https://console.mistral.ai/api-keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Paste your whole Mistral Direct API key.",
+      "keyShape": null,
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://docs.mistral.ai/getting-started/quickstarts/developer/first-api-request"
+        }
+      ]
+    },
+    {
+      "id": "zai",
+      "displayName": "Z.ai",
+      "kind": "maker",
+      "keysUrl": "https://z.ai/manage-apikey/apikey-list",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Paste your whole Z.ai Direct API key in id.secret format, including the dot.",
+      "keyShape": {
+        "pattern": "id.secret",
+        "separator": ".",
+        "basis": "example",
+        "source": "https://docs.z.ai/guides/develop/http/introduction"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://docs.z.ai/guides/overview/quick-start"
+        }
+      ]
+    },
+    {
+      "id": "minimax",
+      "displayName": "MiniMax",
+      "kind": "maker",
+      "keysUrl": "https://platform.minimax.io/user-center/basic-information/interface-key",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Paste your whole MiniMax Direct API key.",
+      "keyShape": null,
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://platform.minimax.io/docs/guides/quickstart-preparation"
+        }
+      ]
+    },
+    {
+      "id": "perplexity",
+      "displayName": "Perplexity",
+      "kind": "maker",
+      "keysUrl": "https://console.perplexity.ai/project/keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Your Perplexity Direct API key starts with pplx-.",
+      "keyShape": {
+        "prefix": "pplx-",
+        "basis": "example",
+        "source": "https://docs.perplexity.ai/docs/admin/api-key-management"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://docs.perplexity.ai/docs/getting-started/quickstart"
+        }
+      ]
+    },
+    {
+      "id": "openrouter",
+      "displayName": "OpenRouter",
+      "kind": "host",
+      "keysUrl": "https://openrouter.ai/settings/keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Your OpenRouter Direct API key starts with sk-or-v1-.",
+      "keyShape": {
+        "prefix": "sk-or-v1-",
+        "basis": "example",
+        "source": "https://openrouter.ai/docs/api/api-reference/api-keys/create-a-new-api-key"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": true
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://openrouter.ai/docs/api_reference/authentication"
+        },
+        {
+          "mode": "vault",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://openrouter.ai/docs/api/api-reference/api-keys/create-a-new-api-key"
+        }
+      ]
+    },
+    {
+      "id": "groq",
+      "displayName": "Groq",
+      "kind": "host",
+      "keysUrl": "https://console.groq.com/keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Your Groq Direct API key starts with gsk_.",
+      "keyShape": {
+        "prefix": "gsk_",
+        "basis": "example",
+        "source": "https://console.groq.com/docs/production-readiness/security-onboarding"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://console.groq.com/docs/quickstart"
+        }
+      ]
+    },
+    {
+      "id": "cerebras",
+      "displayName": "Cerebras",
+      "kind": "host",
+      "keysUrl": "https://cloud.cerebras.ai",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Your Cerebras Direct API key starts with csk-.",
+      "keyShape": {
+        "prefix": "csk-",
+        "basis": "stated",
+        "source": "https://inference-docs.cerebras.ai/integrations/kong-api-gateway"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://inference-docs.cerebras.ai/quickstart"
+        }
+      ]
+    },
+    {
+      "id": "together",
+      "displayName": "Together AI",
+      "kind": "host",
+      "keysUrl": "https://api.together.ai/settings/projects/~current/api-keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Paste your whole Together AI Direct API key.",
+      "keyShape": null,
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://docs.together.ai/docs/quickstart"
+        }
+      ]
+    },
+    {
+      "id": "fireworks",
+      "displayName": "Fireworks AI",
+      "kind": "host",
+      "keysUrl": "https://app.fireworks.ai/settings/users/api-keys",
+      "keyTerm": "API key",
+      "createAction": "Create an API key.",
+      "formatHint": "Your Fireworks AI Direct API key starts with fw_.",
+      "keyShape": {
+        "prefix": "fw_",
+        "basis": "example",
+        "source": "https://docs.fireworks.ai/ecosystem/fireconnect/claude-code"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://docs.fireworks.ai/getting-started/quickstart"
+        }
+      ]
+    },
+    {
+      "id": "higgsfield",
+      "displayName": "Higgsfield",
+      "kind": "host",
+      "keysUrl": "https://console.higgsfield.ai",
+      "keyTerm": "key ID and secret",
+      "createAction": "Create a key ID and secret.",
+      "formatHint": "Paste your key ID and secret as id:secret.",
+      "keyShape": {
+        "pattern": "KEY_ID:KEY_SECRET",
+        "separator": ":",
+        "basis": "example",
+        "source": "https://docs.higgsfield.ai/docs/authentication"
+      },
+      "openaiCompatible": false,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://docs.higgsfield.ai/docs/authentication"
+        }
+      ]
+    },
+    {
+      "id": "huggingface",
+      "displayName": "Hugging Face",
+      "kind": "host",
+      "keysUrl": "https://huggingface.co/settings/tokens",
+      "keyTerm": "access token",
+      "createAction": "Create an access token.",
+      "formatHint": "Your Hugging Face Direct API key starts with hf_.",
+      "keyShape": {
+        "prefix": "hf_",
+        "basis": "example",
+        "source": "https://huggingface.co/docs/hub/security-tokens"
+      },
+      "openaiCompatible": true,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://huggingface.co/docs/hub/security-tokens"
+        }
+      ]
+    },
+    {
+      "id": "fal",
+      "displayName": "fal",
+      "kind": "host",
+      "keysUrl": "https://fal.ai/dashboard/keys",
+      "keyTerm": "key, with API scope for Direct",
+      "createAction": "Click Add key. Select API scope for your Direct API key, then click Create Key.",
+      "formatHint": "Paste the whole fal Direct API key, including the colon.",
+      "keyShape": {
+        "pattern": "key_id:key_secret",
+        "separator": ":",
+        "basis": "stated",
+        "source": "https://fal.ai/docs/platform-apis/v1/keys/create"
+      },
+      "openaiCompatible": false,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": true
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://fal.ai/docs/documentation/setting-up/authentication"
+        },
+        {
+          "mode": "vault",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://fal.ai/docs/platform-apis/v1/keys/create"
+        }
+      ]
+    },
+    {
+      "id": "replicate",
+      "displayName": "Replicate",
+      "kind": "host",
+      "keysUrl": "https://replicate.com/account/api-tokens",
+      "keyTerm": "API token",
+      "createAction": "Create an API token and name it after this app.",
+      "formatHint": "Your Replicate Direct API key starts with r8_.",
+      "keyShape": {
+        "prefix": "r8_",
+        "length": 40,
+        "basis": "stated",
+        "source": "https://replicate.com/docs/topics/security/api-tokens"
+      },
+      "openaiCompatible": false,
+      "modes": {
+        "direct": true,
+        "button": true,
+        "vault": false
+      },
+      "checks": [
+        {
+          "mode": "direct",
+          "how": "docs",
+          "date": "2026-09-18",
+          "source": "https://replicate.com/docs/topics/security/api-tokens"
+        }
+      ]
+    }
+  ]
+}

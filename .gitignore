@@ -6,3 +6,8 @@ coverage/
 .env.*
 .dev.vars
 *.tgz
+__pycache__/
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
