@@ -1,7 +1,7 @@
 {
   "name": "outlet",
   "description": "Add the Connect your AI button from Outlet to a web app. Direct: the user pastes their own API key. Vault: the user connects an account with an admin key. Use when asked to add Outlet or to let users use their own OpenAI, Anthropic, fal or OpenRouter account.",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "author": {
     "name": "Outlet",
     "email": "hello@useoutlet.dev"
