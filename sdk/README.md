@@ -98,6 +98,82 @@ No build step? Import the button from a CDN:
 import { mountConnectButton } from "https://esm.sh/@useoutlet/sdk/ui";
 ```
 
+## Quickstart
+
+```sh
+npm install @useoutlet/sdk
+```
+
+Add the Connect your AI button to a page. The same button can offer Direct,
+Vault or both. This example offers both for OpenAI. Vault needs a registered
+app ID and return address. [Register your app](https://useoutlet.dev/register)
+to get them. Serve this page at your registered return address too.
+
+```html
+<div id="connect"></div>
+<script type="module">
+  import Outlet from "@useoutlet/sdk";
+  import { mountConnectButton } from "@useoutlet/sdk/ui";
+  const params = new URLSearchParams(location.search);
+  const returning = location.pathname === "/outlet/return"
+    && params.has("code") && params.has("state");
+  let session;
+  const button = mountConnectButton(document.getElementById("connect"), {
+    mode: "both",
+    providers: ["openai"],
+    appId: "app_yourapp", // Your registered Vault app ID.
+    redirectUri: location.origin + "/outlet/return",
+    requestedCapUsd: 10, // Your proposed monthly Vault cap in USD.
+    session: returning ? Outlet.handleRedirect() : undefined,
+    onSession(connected) {
+      session = connected;
+      // Enable your app's AI action here.
+    },
+  });
+</script>
+```
+
+Bundle the page with your build. This example uses Vite.
+
+```sh
+npx vite build
+```
+
+`onSession` receives the session after a connection completes.
+`session.keys.openai` holds the Direct API key or Vault App key. Both modes
+return the same session shape. Then call the provider like you already do,
+with its official SDK.
+
+### When a connection ends
+
+A connection can end while your app is running: the user's Vault connection
+is paused at its cap, revoked or disconnected, its refresh token is gone, or
+the provider refuses a Direct API key. The SDK turns each into one typed
+error, `ConnectionEndedError`, with `reason` (`capped`, `revoked`, `expired`
+or `refused`) and `grantId`. `status()` and `refresh()` throw it. To catch
+the provider's own refusal too, hand the provider's SDK the wrapped fetch. A
+provider answer of 401, 402, 403 or 429 becomes one `status()` check. An open
+connection gets the provider's answer back untouched.
+
+```ts
+const ai = new OpenAI({
+  apiKey: session.keys.openai,
+  fetch: Outlet.wrapFetch({ session: () => session }),
+});
+```
+
+The Connect your AI button hears about the end and shows one screen with the
+one thing the user can do: Raise the Vault cap, Connect again, or Paste a new
+Direct API key. When they are done, `onSession` receives the new session, the
+same way it received the first. Your app writes nothing else. Mount the
+button with the session you hold, so it knows the grant.
+
+Phone apps: the same ends come back as `ConnectionEndedError` from
+`refresh()` and `status()`. Run the grant again in the phone's browser sheet
+for a revoked or expired connection. For a capped one, open
+https://useoutlet.dev/account/ in the sheet and call `refresh()` when the
+sheet closes.
+
 ## Usage today (direct mode)
 
 Your user pastes their own API key; the SDK validates it locally (catches
