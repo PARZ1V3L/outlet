@@ -54,5 +54,67 @@ jobs:
       - run: node scripts/quickstart-as-printed.mjs
         working-directory: sdk
 
-  # quickstart-python: the Python quickstart as printed. Its job goes here
-  # in the same shape and rides the Python SDK session.
+  # The Python SDK: ruff, the wheel built and installed, the tests run against
+  # the installed wheel on the oldest and the newest supported Python. The npm
+  # package is built first so the providers.json the Python package ships can
+  # be checked byte for byte against sdk/dist/providers.json, and the
+  # committed copies against what the build writes.
+  python:
+    name: Python SDK on ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+        working-directory: sdk
+      - run: npm run build
+        working-directory: sdk
+      - name: The committed providers.json copies are what the build writes
+        run: git diff --exit-code -- docs/providers.json sdk-python/src/useoutlet/providers.json
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install ruff==0.16.9 pytest==9.1.1 build==1.6.1
+      - run: ruff check .
+        working-directory: sdk-python
+      - run: ruff format --check .
+        working-directory: sdk-python
+      - run: python -m build
+        working-directory: sdk-python
+      - run: python -m pip install dist/*.whl
+        working-directory: sdk-python
+      - run: python -m pytest
+        working-directory: sdk-python
+      - run: python -c "import useoutlet; print(useoutlet.__version__)"
+
+  # The Python README's quickstart, verbatim, against this checkout's wheel,
+  # in a fresh venv, with a fake vault on the loopback. No secrets, no network
+  # past the loopback. The script says what it substitutes (the wheel's path
+  # for the package name in the printed install line) and how the fake stands
+  # in for api.useoutlet.dev.
+  quickstart-python:
+    name: Python quickstart as printed
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - run: python -m pip install build==1.6.1
+      - run: python -m build
+        working-directory: sdk-python
+      - run: python scripts/quickstart_as_printed.py
+        working-directory: sdk-python
