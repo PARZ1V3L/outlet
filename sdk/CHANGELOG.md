@@ -1,5 +1,11 @@
 # Changelog (@useoutlet/sdk)
 
+## Unreleased
+
+### Added
+
+- `@useoutlet/sdk/plan`, a ChatGPT plan way in for apps that run on the user's own machine. The user signs in at OpenAI. The app gets the same session, with an hour-long token in `keys.openai`. No Outlet server is touched.
+
 ## 0.6.3 (2026-09-26)
 
 ### Added

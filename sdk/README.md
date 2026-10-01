@@ -207,6 +207,94 @@ OpenAI, Anthropic, and Google get strict key-format checks (mix-ups caught,
 admin keys refused); other providers are accepted with the same admin-key
 safety check, since their key formats vary.
 
+## ChatGPT plan
+
+A way in beside Direct and Vault. The user signs in at OpenAI and your app
+spends their ChatGPT plan. It is free in Outlet, like Direct. No Outlet
+server is touched, and no token goes to Outlet.
+
+OpenAI allows ChatGPT plan use in open-source apps and in personal projects that run on the user's own machine. A paid or hosted app needs OpenAI's approval first.
+
+The entry is `@useoutlet/sdk/plan`. It runs in Node, on the user's machine.
+It listens on `127.0.0.1` for OpenAI's return and keeps the sign-in in a file.
+It cannot run in a browser page.
+
+```ts
+import OpenAI from "openai";
+import Outlet from "@useoutlet/sdk";
+import { connectPlan, restorePlan } from "@useoutlet/sdk/plan";
+
+const app = { provider: "openai", appName: "Your App" } as const;
+let session = (await restorePlan(app)) ?? (await connectPlan(app));
+
+const ai = new OpenAI({
+  apiKey: session.keys.openai,
+  fetch: Outlet.wrapFetch({ session: () => session }),
+  maxRetries: 0,
+});
+```
+
+The five calls:
+
+- `connectPlan({ provider: "openai", appName })` opens the user's browser for
+  OpenAI's sign-in and returns a session. The first time, the user approves
+  your app by name. Label the action `Continue with ChatGPT`.
+- `restorePlan({ provider, appName })` returns the saved session, or null. It
+  opens no browser. A token near its end is refreshed first.
+- `refreshPlan(session)` returns a session with a new token.
+- `forgetPlan({ provider, appName })` ends the sign-in at OpenAI and deletes
+  the local record. The user disconnects the app itself in
+  [ChatGPT settings](https://chatgpt.com/settings/usage).
+- `planModels(session)` returns the models the account may use.
+
+The session is the same `OutletSession`:
+
+- `mode` is `"plan"`.
+- `keys.openai` holds a token that lasts an hour. It goes where an API key goes.
+- `expiresAt` is that token's expiry.
+- `capUsd` is `Infinity`. Outlet sets no cap here. The cap is the user's own
+  setting at OpenAI.
+- The refresh token is never on the session. It lives in the store.
+
+The store is a file only the user can read, at
+`~/.config/<your app>/outlet-plan.json`. Pass `store` to keep the sign-in
+somewhere else, a keychain for one. This version keeps one account per app.
+
+What ends it is the same typed error, `ConnectionEndedError`:
+
+- `capped`: the plan or your app reached its limit at OpenAI. Show
+  `Manage usage`, linked to https://chatgpt.com/settings/usage.
+- `revoked`: the user disconnected your app.
+- `expired`: the sign-in can no longer be refreshed.
+- `refused`: OpenAI does not allow plan use on this account.
+
+The wrapped fetch throws `capped` and `refused`. OpenAI's SDK reports an error
+from its fetch as a connection error. The `ConnectionEndedError` is on its
+`cause`. `refreshPlan()` and `restorePlan()` throw `revoked` and `expired`.
+When OpenAI answers 401, call `refreshPlan()`.
+
+A limit can also arrive inside a stream. The wrapped fetch never reads a
+stream. Hand each event to `planStreamEnd`:
+
+```ts
+import { planStreamEnd } from "@useoutlet/sdk/plan";
+
+for await (const event of stream) {
+  const end = planStreamEnd(event, session);
+  if (end) throw end;
+}
+```
+
+OpenAI never moves the user to other billing by itself. When the plan ends,
+offer a Direct API key or Vault. `Outlet.direct()` returns the same session
+shape. [examples/plan/](../examples/plan/) does exactly that.
+
+OpenAI's limits for plan use: the Responses API only, with `store: false` and
+`stream: true`. Some request fields and tools are not supported.
+[OpenAI's page](https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations)
+has the list. While requests run on the plan, show `Using ChatGPT plan` near
+where the user types.
+
 ## React and Vue
 
 The button comes as a React hook and a Vue composable.
