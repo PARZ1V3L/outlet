@@ -162,9 +162,17 @@ export async function direct(opts: DirectOptions): Promise<OutletSession> {
 
 /**
  * Vault operations (refresh/status/revoke) have nothing to act on for a
- * direct-mode session — fail with directions rather than a confusing 404.
+ * direct-mode session or a ChatGPT plan session: fail with directions
+ * rather than a confusing 404.
  */
 export function assertVaultGrant(grantId: string): void {
+  if (grantId.startsWith("plan_")) {
+    fail(
+      "This is a ChatGPT plan session: there is no vault grant behind it. " +
+        "Use refreshPlan() to renew it.",
+      "plan_session",
+    );
+  }
   if (grantId.startsWith("direct_")) {
     fail(
       "This is a direct-mode session: there is no vault grant behind it. " +

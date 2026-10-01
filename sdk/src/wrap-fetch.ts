@@ -6,8 +6,11 @@
  * connection still open hands the provider's answer back untouched (the
  * provider's own rate limit, say). On a Direct session a 401 is the
  * provider refusing the pasted key: ConnectionEndedError with reason
- * "refused". Outlet stays out of the data path: the wrapper reads no
- * request and no response body.
+ * "refused". On a ChatGPT plan session the vault is never asked: the wrapper
+ * reads OpenAI's error code from a copy of the refused answer, and the two
+ * codes that end the plan (its limit, an account OpenAI does not allow)
+ * throw ConnectionEndedError. Outlet stays out of the data path: the wrapper
+ * reads no request, no answer that succeeded and no stream.
  *
  *   const ai = new OpenAI({
  *     apiKey: session.keys.openai,
@@ -16,6 +19,7 @@
  */
 import { ended } from "./ended.js";
 import { status } from "./grants.js";
+import { isPlanSession, planEndOfAnswer } from "./plan-ends.js";
 import { ConnectionEndedError, type OutletSession, type Provider, type RequestOptions } from "./types.js";
 
 export interface WrapFetchOptions extends RequestOptions {
@@ -40,6 +44,11 @@ export function wrapFetch(o: WrapFetchOptions): typeof fetch {
     if (!CHECKED.has(res.status)) return res;
     const s = typeof o.session === "function" ? o.session() : o.session;
     if (!s || typeof s.grantId !== "string") return res;
+    if (isPlanSession(s)) {
+      const end = await planEndOfAnswer(res, s.grantId);
+      if (end) throw end;
+      return res;
+    }
     if (s.mode === "direct" || s.grantId.startsWith("direct_")) {
       if (res.status !== 401) return res;
       throw ended("refused", s.grantId, { provider: providerOf(s), status: 401 });

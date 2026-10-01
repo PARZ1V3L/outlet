@@ -1,4 +1,5 @@
 /** Mount-time checks and the session binding, kept apart from the widget. */
+import { isPlanSession } from "../plan-ends.js";
 import { getProvider, providerIds } from "../providers.js";
 import { OutletError, type OutletSession } from "../types.js";
 import type { Config } from "./routes.js";
@@ -104,6 +105,8 @@ export function boundFrom(session: OutletSession | null | undefined, cfg: Config
     (k) => (getProvider(k) || cfg.custom?.[k]) && typeof held[k] === "string" && (held[k] as string).length > 0,
   );
   if (!provider || !session) return null;
+  // A ChatGPT plan session is neither mode: the button has no screens for it.
+  if (isPlanSession(session)) return null;
   const mode = session.mode === "direct" ? "direct" : "vault";
   // Vault has screens only where the registry marks modes.vault.
   if (mode === "vault" && !getProvider(provider)?.modes.vault) return null;

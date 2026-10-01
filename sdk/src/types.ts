@@ -70,9 +70,11 @@ export interface OutletSession {
   /**
    * How the session was created. "direct" = user-pasted key validated
    * locally (no vault, no cap metering). "vault" = a capped, revocable
-   * App key provisioned by the Outlet vault. Absent = vault.
+   * App key provisioned by the Outlet vault. "plan" = the user signed in at
+   * OpenAI and `keys.openai` holds an hour-long token that spends their
+   * ChatGPT plan (@useoutlet/sdk/plan; no vault, no Outlet cap). Absent = vault.
    */
-  mode?: "direct" | "vault";
+  mode?: "direct" | "vault" | "plan";
 }
 
 export interface GrantInfo {
