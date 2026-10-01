@@ -37,6 +37,11 @@
       "types": "./dist/vue/index.d.ts",
       "default": "./dist/vue/index.js"
     },
+    "./plan": {
+      "types": "./dist/plan/index.d.ts",
+      "browser": "./dist/plan/browser.js",
+      "default": "./dist/plan/index.js"
+    },
     "./providers.json": "./dist/providers.json",
     "./package.json": "./package.json"
   },
