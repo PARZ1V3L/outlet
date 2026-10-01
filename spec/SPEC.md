@@ -41,7 +41,7 @@ differently and MUST NOT blur them in UX or marketing:
 | Class | Examples | How Outlet connects it |
 |---|---|---|
 | **API account** | Anthropic Console org, OpenAI platform org, Google Cloud project | Admin-API adapters: Outlet mints scoped, capped keys (§5). Fully under Outlet's control. |
-| **Subscription** | Claude Pro/Max, ChatGPT Plus/Pro | **Provider-sanctioned ports only.** Anthropic: Agent SDK authentication against the plan's monthly Agent SDK credit (explicitly permitted for third-party apps as of 2026-06-15). OpenAI: "Sign in with ChatGPT" where offered. Outlet wraps these as connect options; it cannot and does not mint keys from subscriptions. |
+| **Subscription** | Claude Pro/Max, ChatGPT Plus/Pro | **Provider-sanctioned ports only.** OpenAI: Sign in with ChatGPT with ChatGPT plan usage, open since 2026-09-29 to open-source apps, personal projects that run on the user's own machine and partners OpenAI approves. Anthropic: Claude login only in products Anthropic has approved. Its monthly Agent SDK credit for third-party apps was announced 2026-05-13 and paused 2026-06-15. Outlet wraps these as connect options; it cannot and does not mint keys from subscriptions. |
 
 Consequences:
 
@@ -232,8 +232,9 @@ Verified against a live org:
 
 1. **Connect (once):** guided — Console individual accounts click "Set up
    organization" (free, instant) → create admin key → paste into Outlet.
-   Claude Pro/Max subscribers have **no API surface**; route them to the
-   Agent SDK subscription port (§2.1), never this adapter.
+   Claude Pro/Max subscribers have **no API surface**. Anthropic's
+   subscription port is not open to most apps (§2.1). Never route them to
+   this adapter.
 2. **Grant (per app):** Outlet creates workspace `outlet · <AppName>` →
    deep-link the user to Console to create one key inside it (the single
    manual step) → user pastes the key → Outlet verifies it via key-list,
@@ -563,7 +564,7 @@ app's back channel, not a grant-screen write; PKCE is its protection.
    2026-06-11:** Yes — fully programmatic, raw key returned. Budget
    sub-question also **ANSWERED 2026-06-11: advisory** (live $1 burn test,
    §5.2). All probe-era open questions are now closed with live evidence.
-1b. Anthropic Agent SDK credit (live 2026-06-15): exact auth flow for
+1b. Anthropic Agent SDK credit (announced 2026-05-13, paused 2026-06-15): exact auth flow for
    third-party apps, what grant/consent surface exists, and whether per-app
    visibility/revocation is exposed. This is the sanctioned subscription port —
    the consumer wedge.

@@ -58,15 +58,13 @@ story). SPEC §2.1 walls this off formally.
 
 **But the subscription door is opening anyway — on the providers' terms:**
 
-- **Anthropic, 2026-06-15:** every plan gains an "Agent SDK credit"
-  ($20 Pro → $200 Max 20x) explicitly for third-party apps. A Max plan now
-  includes subscription power apps can legally tap.
-- **OpenAI:** "Sign in with ChatGPT" — app usage runs on the user's own plan.
+- **OpenAI, 2026-09-29:** Sign in with ChatGPT lets Plus and Pro users spend their plan inside an app. It is open now to open-source apps, personal projects that run on the user's own machine and approved partners. Hosted apps wait for OpenAI's approval.
+- **Anthropic:** a monthly Agent SDK credit for third-party apps ($20 Pro to $200 Max 20x) was announced 2026-05-13 and paused 2026-06-15. Claude login works only in products Anthropic has approved.
 
 Outlet can't mint keys from subscriptions, but it can be the **one button
 that wraps both doors**: API account → we provision a capped key
 (built, demonstrated); subscription → we route through the provider's
-sanctioned port (research item 1b, opens June 15). The user just sees
+sanctioned port, as each one opens. The user just sees
 "Connect your AI."
 
 **Reframe on "the power you already have":** the API wallet is the prepaid
