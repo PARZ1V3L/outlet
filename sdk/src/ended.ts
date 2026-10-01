@@ -23,11 +23,11 @@ function announce(e: ConnectionEndedError): void {
 export function ended(
   reason: EndReason,
   grantId: string,
-  extra: { info?: GrantInfo; provider?: Provider; status?: number } = {},
+  extra: { info?: GrantInfo; provider?: Provider; status?: number; message?: string } = {},
 ): ConnectionEndedError {
-  const message = reason === "refused" && extra.provider
+  const message = extra.message ?? (reason === "refused" && extra.provider
     ? `${getProvider(extra.provider)?.displayName ?? extra.provider} refused this Direct API key. Ask the user for a new one.`
-    : undefined;
+    : undefined);
   const e = new ConnectionEndedError(reason, grantId, { ...extra, ...(message ? { message } : {}) });
   announce(e);
   return e;
