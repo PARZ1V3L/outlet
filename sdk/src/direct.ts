@@ -72,8 +72,7 @@ function validateKey(provider: Provider, raw: string): string {
   if (key.startsWith("sk-ant-admin")) {
     fail(
       "This is an Anthropic ADMIN key. It controls the whole organization. " +
-        "Never paste an admin key into an app. Use a regular API key " +
-        "(starts with sk-ant-api).",
+        "Never paste an admin key into an app. Use a regular API key.",
       "admin_key_rejected",
     );
   }
