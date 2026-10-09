@@ -77,7 +77,7 @@ User reviews: app identity, requested providers, proposed monthly cap
 User approves → vault provisions an app-scoped key at each provider
   (workspace / project / sub-key primitive, see §5)
 Outlet returns a short-lived session to the app:
-  { keys: { anthropic: "...", openai: "..." }, grant_id, expires_at }
+  { status: "complete", grantId, keys: { anthropic: "...", openai: "..." }, capUsd, expiresAt }
 ```
 
 - Keys are delivered via the SDK over TLS and SHOULD be held in memory or
@@ -349,7 +349,8 @@ The vault serves **registered apps only**.
 - **Registration:** a developer registers an app and chooses a client type:
   - **Confidential** (has a backend): receives a public `app_id` (`app_…`,
     embeddable) and a confidential `app_secret` (`apps_…`, server-side only).
-    Every grant operation is authenticated with the secret.
+    Every grant operation is authenticated with the secret, sent as the
+    `x-outlet-app-secret: <app_secret>` header.
   - **Public** (no backend — SPA, mobile, CLI): receives an `app_id` and
     registers one or more exact-match `redirect_uri`s; **no secret is
     issued**. Grant creation is authenticated with PKCE and later operations
@@ -458,10 +459,10 @@ Normative behavior:
 ```ts
 Outlet.connect(opts: {
   appId: string;
-  providers: ("anthropic" | "openai" | "google")[];
-  requestedCapUsd?: number;          // the app's ask, shown as the prefilled
-                                     // suggestion; the user sets the cap on
-                                     // the approval card, $1 or more
+  providers: ("openai" | "anthropic" | "fal" | "openrouter")[];
+  requestedCapUsd?: number;          // the app's ask, $1000 at most, shown as
+                                     // the prefilled suggestion; the user sets
+                                     // the cap on the approval card, $1 or more
   redirectUri?: string;
 }): Promise<OutletSession>
 
@@ -486,16 +487,26 @@ interface GrantInfo {
 }
 ```
 
-`status()` is served by `GET /v0/grants/{id}/status`, a pure read: it never
-returns key material and never writes a delivery audit row. (Answering
-status via the `GET /v0/grants/{id}` polling route would re-deliver the
-scoped key on every check — the read and the delivery are deliberately
-separate endpoints.) `spendUsd` is the vault's last persisted meter
-reading, visible to the grant holder: month-to-date, up to one metering
-interval (~5 min) stale, and `0` for a grant the meter has not yet read.
-`reason` says why a capped grant stopped: `"spend"` (its monthly cap),
-`"unreadable"` (the meter could not read the provider's usage for an hour)
-or `"currency"` (§3.4). A grant in any other status carries no `reason`.
+`POST /v0/grants` answers a confidential client (the app secret sent) with
+`{ grantRequestId, grantUrl }` and a public client (PKCE, no secret, §7.1)
+with `{ grant_request_id, grant_url }`. A confidential client then polls;
+the poll carries a `status` that `OutletSession` above does not declare.
+Pending: `{ status: "pending" }`. Once approved: `{ status: "complete",
+...OutletSession }`. A request that ends before approval: `{ status:
+"capped" | "revoked", grantId }`.
+
+`refresh()` is `POST /v0/grants/{id}/refresh`. `revoke()` is
+`DELETE /v0/grants/{id}`. `status()` is served by `GET /v0/grants/{id}/status`,
+a pure read: it never returns key material and never writes a delivery
+audit row. (Answering status via the `GET /v0/grants/{id}` polling route
+would re-deliver the scoped key on every check. That is why the read and
+the delivery are separate endpoints.) `spendUsd` is the vault's
+last persisted meter reading, visible to the grant holder: month-to-date,
+up to one metering interval (~5 min) stale, and `0` for a grant the meter
+has not yet read. `reason` says why a capped grant stopped: `"spend"`
+(its monthly cap), `"unreadable"` (the meter could not read the
+provider's usage for an hour) or `"currency"` (§3.4). A grant in any
+other status carries no `reason`.
 
 A capped connection becomes active again when its owner raises the cap
 above the month's spend (§3.7). After that, call `refresh()`: on OpenAI,
@@ -503,7 +514,8 @@ Anthropic and fal the key is a NEW key; on OpenRouter it is the same key,
 reopened. An app MUST NOT keep a key past a `capped` status.
 
 Wire protocol: plain HTTPS + JSON; OAuth 2.1-style grant screen; PKCE for
-public clients (§7.1). Full endpoint schema in `openapi.yaml` (TODO).
+public clients (§7.1). The six calls above, as curl with their exact
+answers, are at https://useoutlet.dev/docs/dev/any-language.
 
 ### 7.1 Public-client grant flow (PKCE)
 
@@ -513,19 +525,20 @@ keep using the secret unchanged. See ADR 0005.
 
 1. SDK generates `code_verifier` (random) and
    `code_challenge = BASE64URL(SHA256(code_verifier))`, plus a `state` value.
-2. `POST /grants` with `app_id`, `providers`, `requested_cap_usd`,
+2. `POST /v0/grants` with `app_id`, `providers`, `requested_cap_usd`,
    `redirect_uri`, `code_challenge`, `code_challenge_method: "S256"`, `state`
    → `{ grant_request_id, grant_url }`. **No secret.**
 3. User completes the grant screen; the vault provisions the scoped keys and
    redirects to the **registered** `redirect_uri` with `?code=…&state=…`.
    Scoped keys are **never** placed in the redirect URL.
 4. SDK verifies `state`, then exchanges over the back channel:
-   `POST /grants/token` with `{ grant_request_id, code, code_verifier }` →
+   `POST /v0/grants/token` with `{ grant_request_id, code, code_verifier }` →
    `{ ...OutletSession, refresh_token }`. The vault checks
    `SHA256(code_verifier)` against the stored `code_challenge`.
 5. `refresh` / `status` / `revoke` send `Authorization: Bearer <refresh_token>`
-   in place of the secret. `refresh` **rotates** the token (OAuth 2.1 §6.1):
-   the response carries a new `refresh_token` and the presented one is voided.
+   in place of the secret (`x-outlet-app-secret: <app_secret>`). `refresh`
+   **rotates** the token (OAuth 2.1 §6.1): the response carries a new
+   `refresh_token` and the presented one is voided.
 
 The `redirect_uri` MUST match one registered for the `app_id` (§6.1). A
 loopback address (http://localhost, http://127.0.0.1) matches on any port.
