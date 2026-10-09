@@ -14,7 +14,7 @@ permissions:
 jobs:
   build:
     name: Typecheck, test and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
@@ -52,7 +52,7 @@ jobs:
   publish:
     name: Publish @useoutlet/sdk
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       id-token: write
@@ -80,7 +80,7 @@ jobs:
   release-notes:
     name: GitHub Release with the CHANGELOG entry
     needs: publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: write

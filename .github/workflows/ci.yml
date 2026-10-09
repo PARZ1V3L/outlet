@@ -10,7 +10,7 @@ permissions:
 jobs:
   test:
     name: Typecheck, test and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -35,7 +35,7 @@ jobs:
   # name in the printed install line) and pins the bundler.
   quickstart:
     name: Quickstart as printed
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -61,7 +61,7 @@ jobs:
   # committed copies against what the build writes.
   python:
     name: Python SDK on ${{ matrix.python }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     strategy:
       fail-fast: false
@@ -104,7 +104,7 @@ jobs:
   # in for api.useoutlet.dev.
   quickstart-python:
     name: Python quickstart as printed
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
